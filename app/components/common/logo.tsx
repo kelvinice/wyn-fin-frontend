@@ -1,13 +1,17 @@
-import { useTheme } from "../core/theme-context";
+import { useTheme } from "./theme-context";
 
-export function Logo() {
+interface Props {
+  className?: string;
+}
+
+export function Logo({ className = "" }: Props) {
   const { theme } = useTheme();
   
   return (
     <img
       src={theme === 'dark' ? '/logo-dark.png' : '/logo.png'}
       alt="Logo"
-      className="h-8 w-auto"
+      className={className}
     />
   );
 }

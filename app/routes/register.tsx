@@ -1,44 +1,66 @@
+// app/routes/register.tsx
 import { useState } from "react";
 import { Link, useNavigate } from "react-router";
 import { motion, AnimatePresence } from "framer-motion";
-import { EyeIcon, EyeSlashIcon, LockClosedIcon, UserIcon } from "@heroicons/react/24/outline";
+import { 
+  EyeIcon, 
+  EyeSlashIcon, 
+  LockClosedIcon, 
+  UserIcon, 
+  EnvelopeIcon 
+} from "@heroicons/react/24/outline";
 import { Logo } from "../components/common/logo";
 import type { Route } from "./+types/home";
 import { FancyCard } from "~/components/common/cards/card";
 import { TiltAble } from "~/components/common/tiltable";
-import type { SignInFormData } from "~/components/auth/core/models";
-import { useLogin } from "~/components/auth/components/hooks/useLogin";
+
+import type { RegisterFormData } from "~/components/auth/core/models";
+import { useRegister } from "~/components/auth/components/hooks/useRegister";
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: "Login | WynFin" },
-    { name: "description", content: "Login to access your WynFin account" },
+    { title: "Create Account | WynFin" },
+    { name: "description", content: "Create a new WynFin account" },
   ];
 }
 
-export default function LoginPage() {
+export default function RegisterPage() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [passwordConfirm, setPasswordConfirm] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const { mutate: login, isPending: isLoading, error: loginError } = useLogin();
+  const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
+  const { mutate: register, isPending: isLoading } = useRegister();
   const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     
-    const loginData: SignInFormData = {
-      email: email,
-      password: password
+    // Simple validation
+    if (password !== passwordConfirm) {
+      setError("Passwords do not match");
+      return;
+    }
+    
+    if (password.length < 8) {
+      setError("Password must be at least 8 characters");
+      return;
+    }
+    
+    const registerData: RegisterFormData = {
+      email,
+      password,
+      passwordConfirm
     };
     
-    login(loginData, {
+    register(registerData, {
       onSuccess: () => {
-        navigate("/");
+        navigate("/auth/login");
       },
       onError: (err) => {
-        setError(err instanceof Error ? err.message : "Invalid email or password");
+        setError(err instanceof Error ? err.message : "Registration failed. Please try again.");
       }
     });
   };
@@ -76,12 +98,12 @@ export default function LoginPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.7, duration: 0.5 }}
           >
-            Financial manager and dashboard.
+            Create your account to get started.
           </motion.p>
         </div>
       </motion.div>
 
-      {/* Right side - login form */}
+      {/* Right side - registration form */}
       <div className="flex-grow flex items-center justify-center p-6 bg-base-100">
         <motion.div
           className="w-full max-w-md"
@@ -91,12 +113,12 @@ export default function LoginPage() {
         >
           <div className="mb-8 text-center md:hidden">
             <Logo />
-            <h1 className="text-3xl font-bold mt-6">Welcome Back</h1>
-            <p className="mt-2 text-gray-600 dark:text-gray-300">Sign in to continue</p>
+            <h1 className="text-3xl font-bold mt-6">Create Account</h1>
+            <p className="mt-2 text-gray-600 dark:text-gray-300">Join WynFin today</p>
           </div>
 
           <FancyCard className="p-8">
-            <h2 className="text-2xl font-bold mb-6">Sign In</h2>
+            <h2 className="text-2xl font-bold mb-6">Create Account</h2>
             
             {error && (
               <motion.div 
@@ -108,13 +130,13 @@ export default function LoginPage() {
               </motion.div>
             )}
             
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-4">
               <div className="form-control">
                 <label className="label">
                   <span className="label-text">Email</span>
                 </label>
                 <div className="relative">
-                  <UserIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <EnvelopeIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                   <input
                     type="email"
                     placeholder="Enter your email"
@@ -134,11 +156,12 @@ export default function LoginPage() {
                   <LockClosedIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                   <input
                     type={showPassword ? "text" : "password"}
-                    placeholder="Enter your password"
+                    placeholder="Create a password"
                     className="input input-bordered pl-10 pr-10 w-full"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
+                    minLength={8}
                   />
                   <button
                     type="button"
@@ -152,16 +175,40 @@ export default function LoginPage() {
                     )}
                   </button>
                 </div>
+              </div>
+              
+              <div className="form-control">
                 <label className="label">
-                  <Link to="/auth/forgot-password" className="label-text-alt link link-hover text-primary">
-                    Forgot password?
-                  </Link>
+                  <span className="label-text">Confirm Password</span>
                 </label>
+                <div className="relative">
+                  <LockClosedIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <input
+                    type={showPasswordConfirm ? "text" : "password"}
+                    placeholder="Confirm your password"
+                    className="input input-bordered pl-10 pr-10 w-full"
+                    value={passwordConfirm}
+                    onChange={(e) => setPasswordConfirm(e.target.value)}
+                    required
+                    minLength={8}
+                  />
+                  <button
+                    type="button"
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2"
+                    onClick={() => setShowPasswordConfirm(!showPasswordConfirm)}
+                  >
+                    {showPasswordConfirm ? (
+                      <EyeSlashIcon className="w-5 h-5 text-gray-400" />
+                    ) : (
+                      <EyeIcon className="w-5 h-5 text-gray-400" />
+                    )}
+                  </button>
+                </div>
               </div>
               
               <motion.button
                 type="submit"
-                className={`btn btn-primary w-full relative overflow-hidden`}
+                className="btn btn-primary w-full mt-6"
                 disabled={isLoading}
                 whileTap={{ scale: isLoading ? 1 : 0.95 }}
               >
@@ -175,7 +222,7 @@ export default function LoginPage() {
                       exit={{ opacity: 0 }}
                       transition={{ duration: 0.2 }}
                     >
-                      <span>Signing in</span>
+                      <span>Creating Account</span>
                       <motion.div
                         className="flex space-x-1"
                         initial={{ opacity: 0 }}
@@ -199,9 +246,7 @@ export default function LoginPage() {
                       </motion.div>
                     </motion.div>
                   ) : (
-                    <span>
-                      Sign in
-                    </span>
+                    <span>Create Account</span>
                   )}
                 </AnimatePresence>
               </motion.button>
@@ -211,15 +256,15 @@ export default function LoginPage() {
               <button
                 type="button"
                 className="btn btn-outline w-full"
-                onClick={() => navigate("/auth/register")}
+                onClick={() => navigate("/auth/login")}
               >
-                Create Account
+                Sign In Instead
               </button>
             </form>
           </FancyCard>
           
           <p className="text-center mt-6 text-sm text-gray-500 dark:text-gray-400">
-            By signing in, you agree to our{" "}
+            By creating an account, you agree to our{" "}
             <Link to="/terms" className="text-primary hover:underline">
               Terms of Service
             </Link>{" "}

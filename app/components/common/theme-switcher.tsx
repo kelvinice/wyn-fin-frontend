@@ -1,5 +1,5 @@
 import { MoonIcon, SunIcon } from '@heroicons/react/24/solid'
-import { useTheme } from "../core/theme-context";
+import { useTheme } from "./theme-context";
 
 export function ThemeSwitcher() {
     const {toggleTheme, theme} = useTheme();
