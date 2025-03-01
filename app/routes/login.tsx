@@ -35,7 +35,7 @@ export default function LoginPage() {
     
     login(loginData, {
       onSuccess: () => {
-        navigate("/");
+        navigate("/dashboard");
       },
       onError: (err) => {
         setError(err instanceof Error ? err.message : "Invalid email or password");

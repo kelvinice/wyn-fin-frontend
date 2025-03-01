@@ -10,6 +10,8 @@ type Params = {
   "/": {};
   "/auth/login": {};
   "/auth/register": {};
+  "/dashboard": {};
+  "/test": {};
   "/*": {
     "*": string;
   };

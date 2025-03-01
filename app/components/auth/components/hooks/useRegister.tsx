@@ -1,7 +1,7 @@
 import { useMutation } from "@tanstack/react-query";
 
-import AuthService from "~/components/services/auth-service";
 import type { RegisterFormData } from "../../core/models";
+import AuthService from "~/services/auth-service";
 
 export function useRegister() {
   const authService = new AuthService();

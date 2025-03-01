@@ -9,10 +9,17 @@ export type RegisterFormData = {
     passwordConfirm: string
 }
 
+export type User = {
+    id: number
+    email: string
+    name?: string
+    createdAt?: string
+    updatedAt?: string
+}
+
 export type AuthResponse = {
     token: string
-    user: {
-        id: number
-        email: string
-    }
+    refreshToken?: string
+    expiresIn: number
+    user: User
 }

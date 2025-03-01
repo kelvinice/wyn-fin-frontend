@@ -1,20 +1,25 @@
 // app/components/hooks/useLogin.ts
 import { useMutation } from "@tanstack/react-query";
-import AuthService from "~/components/services/auth-service";
-import type { SignInFormData } from "../../core/models";
+import type { SignInFormData, AuthResponse } from "../../core/models";
+import AuthService from "~/services/auth-service";
+import { useSignIn } from "../auth-provider";
 
 export function useLogin() {
   const authService = new AuthService();
+  const signIn = useSignIn();
   
   return useMutation({
-    mutationFn: (data: SignInFormData) => 
-      authService.login(data)
-        .then(response => {
-          // Store the token in localStorage
-          if (response.data?.token) {
-            localStorage.setItem('auth_token', response.data.token);
-          }
-          return response.data;
-        }),
+    mutationFn: async (data: SignInFormData): Promise<AuthResponse> => {
+      const response = await authService.login(data);
+      
+      // Save auth data using our custom hook
+      signIn({
+        token: response.token,
+        user: response.user,
+        expiresIn: response.expiresIn
+      });
+      
+      return response;
+    },
   });
 }
