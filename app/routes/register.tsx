@@ -8,6 +8,7 @@ import { EmailInput } from "~/components/auth/components/email-input";
 import { PasswordInput } from "~/components/auth/components/password-input";
 import { LoadingButton } from "~/components/auth/components/loading-button";
 import { ErrorAlert } from "~/components/auth/components/error-alert";
+import { useToast } from "~/components/common/toast-context";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -18,6 +19,7 @@ export function meta({}: Route.MetaArgs) {
 
 export default function RegisterPage() {
   const navigate = useNavigate();
+  const { showToast } = useToast();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [passwordConfirm, setPasswordConfirm] = useState("");
@@ -47,7 +49,11 @@ export default function RegisterPage() {
     
     register(registerData, {
       onSuccess: () => {
-        navigate("/auth/login");
+        showToast("Account created successfully!", "success", 5000);
+        showToast("You can now sign in with your credentials.", "info", 5000);
+        setTimeout(() => {
+          navigate("/auth/login");
+        }, 1000);
       },
       onError: (err) => {
         setError(err instanceof Error ? err.message : "Registration failed. Please try again.");
@@ -66,7 +72,11 @@ export default function RegisterPage() {
       <ErrorAlert message={error} />
       
       <form onSubmit={handleSubmit} className="space-y-6">
-        <fieldset className="fieldset bg-base-200/50 border border-base-300 p-6 rounded-box">    
+        <fieldset className="fieldset bg-base-200/50 border border-base-300 p-6 rounded-box">
+          <legend className="fieldset-legend bg-primary text-primary-content px-3 py-1 rounded-lg font-medium">
+            New Account
+          </legend>
+          
           <div className="space-y-4">
             <div>
               <label className="fieldset-label text-sm font-medium mb-1 block">Email Address</label>
