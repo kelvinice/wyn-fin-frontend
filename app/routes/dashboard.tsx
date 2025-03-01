@@ -8,6 +8,7 @@ import { LoadingButton } from "~/components/auth/components/loading-button";
 import type { User } from "~/components/auth/core/models";
 import UsersService from "~/services/users-service";
 import type { Route } from "../+types/root";
+import { ThemeSwitcher } from "~/components/common/theme-switcher";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -71,6 +72,7 @@ export default function DashboardPage() {
             <h1 className="text-2xl font-bold">WynFin Dashboard</h1>
             
             <div className="flex items-center gap-4">
+              <ThemeSwitcher />
               <span className="text-sm hidden md:inline-block">
                 Welcome, {user?.email || "User"}
               </span>
