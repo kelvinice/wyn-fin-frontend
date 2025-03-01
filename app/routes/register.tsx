@@ -51,9 +51,7 @@ export default function RegisterPage() {
       onSuccess: () => {
         showToast("Account created successfully!", "success", 5000);
         showToast("You can now sign in with your credentials.", "info", 5000);
-        setTimeout(() => {
-          navigate("/auth/login");
-        }, 1000);
+        navigate("/auth/login");
       },
       onError: (err) => {
         setError(err instanceof Error ? err.message : "Registration failed. Please try again.");
