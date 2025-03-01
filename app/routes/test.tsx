@@ -5,6 +5,7 @@ import { useToast } from "~/components/common/toast-context";
 import { LoadingButton } from "~/components/auth/components/loading-button";
 import { FancyCard } from "~/components/common/cards/card";
 import { TiltAble } from "~/components/common/tiltable";
+import TestService from "~/services/test-service";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -16,11 +17,71 @@ export function meta({}: Route.MetaArgs) {
 export default function TestPage() {
   const { showToast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [pingResponse, setPingResponse] = useState<string | null>(null);
+  const [pingLoading, setPingLoading] = useState(false);
+  const [pingError, setPingError] = useState<string | null>(null);
+  
+  // States for user data
+  const [userData, setUserData] = useState<any>(null);
+  const [userLoading, setUserLoading] = useState(false);
+  const [userError, setUserError] = useState<string | null>(null);
+  const [tokenStatus, setTokenStatus] = useState<string | null>(null);
   
   // Function to simulate loading state
   const simulateLoading = () => {
     setIsLoading(true);
     setTimeout(() => setIsLoading(false), 2000);
+  };
+  
+  // Function to test the ping endpoint
+  const testPingEndpoint = async () => {
+    setPingLoading(true);
+    setPingError(null);
+    setPingResponse(null);
+    
+    try {
+      const testService = new TestService();
+      const response = await testService.ping();
+      setPingResponse(response.message || 'Response received but no message');
+      showToast(`API responded: ${response.message}`, 'success');
+    } catch (error) {
+      console.error('Ping endpoint error:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to connect to API';
+      setPingError(errorMessage);
+      showToast(`API connection failed: ${errorMessage}`, 'error');
+    } finally {
+      setPingLoading(false);
+    }
+  };
+  
+  // Function to test the me endpoint
+  const testMeEndpoint = async () => {
+    setUserLoading(true);
+    setUserError(null);
+    setUserData(null);
+    setTokenStatus(null);
+    
+    try {
+      const testService = new TestService();
+      const response = await testService.getMe();
+      setUserData(response.user);
+      setTokenStatus(response.tokenStatus);
+      
+      if (response.tokenStatus === 'valid') {
+        showToast('Successfully retrieved user data', 'success');
+      } else if (response.tokenStatus === 'expired') {
+        showToast('Your token has expired. Please login again.', 'warning');
+      } else {
+        showToast('Authentication status unknown', 'info');
+      }
+    } catch (error) {
+      console.error('User data endpoint error:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to retrieve user data';
+      setUserError(errorMessage);
+      showToast(`Authentication failed: ${errorMessage}`, 'error');
+    } finally {
+      setUserLoading(false);
+    }
   };
   
   return (
@@ -77,6 +138,104 @@ export default function TestPage() {
               >
                 Long Toast Message
               </button>
+            </div>
+          </FancyCard>
+          
+          {/* API Test section */}
+          <FancyCard className="p-6">
+            <h2 className="text-xl font-semibold mb-4">API Connection Test</h2>
+            <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <span className="text-gray-600 dark:text-gray-300">Test endpoint:</span>
+                <code className="bg-base-200 px-2 py-1 rounded text-sm">/ping</code>
+              </div>
+              
+              {pingResponse && (
+                <div className="bg-success/10 border border-success/30 rounded-lg p-3">
+                  <p className="text-sm font-medium">Response:</p>
+                  <code className="block mt-1 text-success-content bg-success/5 p-2 rounded">
+                    {pingResponse}
+                  </code>
+                </div>
+              )}
+              
+              {pingError && (
+                <div className="bg-error/10 border border-error/30 rounded-lg p-3">
+                  <p className="text-sm font-medium">Error:</p>
+                  <code className="block mt-1 text-error-content bg-error/5 p-2 rounded">
+                    {pingError}
+                  </code>
+                </div>
+              )}
+              
+              <LoadingButton 
+                isLoading={pingLoading} 
+                loadingText="Connecting..."
+                className="btn btn-primary w-full"
+                onClick={testPingEndpoint}
+              >
+                Test API Connection
+              </LoadingButton>
+              
+              <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
+                This will attempt to connect to the backend API at {import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000/'}
+              </p>
+            </div>
+          </FancyCard>
+          
+          {/* User Authentication Test section */}
+          <FancyCard className="p-6">
+            <h2 className="text-xl font-semibold mb-4">User Authentication Test</h2>
+            <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <span className="text-gray-600 dark:text-gray-300">Test endpoint:</span>
+                <code className="bg-base-200 px-2 py-1 rounded text-sm">/me</code>
+              </div>
+              
+              {tokenStatus && (
+                <div className={`
+                  ${tokenStatus === 'valid' ? 'bg-success/10 border-success/30' : 'bg-warning/10 border-warning/30'} 
+                  border rounded-lg p-3`}>
+                  <p className="text-sm font-medium">Token Status:</p>
+                  <div className="mt-1 flex items-center gap-2">
+                    <div className={`w-3 h-3 rounded-full ${tokenStatus === 'valid' ? 'bg-success' : 'bg-warning'}`}></div>
+                    <span className={tokenStatus === 'valid' ? 'text-success' : 'text-warning'}>
+                      {tokenStatus === 'valid' ? 'Valid' : tokenStatus === 'expired' ? 'Expired' : tokenStatus}
+                    </span>
+                  </div>
+                </div>
+              )}
+              
+              {userData && (
+                <div className="bg-info/10 border border-info/30 rounded-lg p-3">
+                  <p className="text-sm font-medium">User Data:</p>
+                  <pre className="mt-1 bg-info/5 p-2 rounded text-xs overflow-auto max-h-40">
+                    {JSON.stringify(userData, null, 2)}
+                  </pre>
+                </div>
+              )}
+              
+              {userError && (
+                <div className="bg-error/10 border border-error/30 rounded-lg p-3">
+                  <p className="text-sm font-medium">Error:</p>
+                  <code className="block mt-1 text-error-content bg-error/5 p-2 rounded">
+                    {userError}
+                  </code>
+                </div>
+              )}
+              
+              <LoadingButton 
+                isLoading={userLoading} 
+                loadingText="Authenticating..."
+                className="btn btn-primary w-full"
+                onClick={testMeEndpoint}
+              >
+                Test Authentication
+              </LoadingButton>
+              
+              <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
+                This will attempt to retrieve the current user's data using the auth token
+              </p>
             </div>
           </FancyCard>
           
