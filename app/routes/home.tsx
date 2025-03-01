@@ -4,6 +4,7 @@ import type { Route } from "./+types/home";
 import { FancyCard } from "~/components/common/cards/card";
 import { Logo } from "~/components/common/logo";
 import { useIsAuthenticated } from "~/components/auth/components/auth-provider";
+import { ThemeSwitcher } from "~/components/common/theme-switcher";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -41,6 +42,30 @@ export default function Home() {
   
   return (
     <div className="min-h-screen bg-base-100">
+      {/* Header with theme switcher */}
+      <header className="absolute top-0 w-full z-20 py-4">
+        <div className="container mx-auto px-6">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center space-x-2">
+              <Logo className="w-8 h-8" />
+              <span className="font-bold text-xl text-primary-content md:text-base-content">WynFin</span>
+            </div>
+            <div className="flex items-center gap-4">
+              <ThemeSwitcher />
+              {isAuthenticated ? (
+                <Link to="/dashboard" className="btn btn-sm btn-accent">
+                  Dashboard
+                </Link>
+              ) : (
+                <Link to="/auth/login" className="btn btn-sm btn-outline border-primary-content/30 text-primary-content hover:border-primary-content/50 hover:bg-primary-content/10 md:text-base-content md:border-base-content/30 md:hover:border-base-content/50 md:hover:text-primary">
+                  Sign In
+                </Link>
+              )}
+            </div>
+          </div>
+        </div>
+      </header>
+      
       {/* Hero Section */}
       <section className="relative bg-gradient-to-br from-primary to-primary-focus text-primary-content overflow-hidden">
         {/* Background decoration */}
@@ -49,7 +74,7 @@ export default function Home() {
           <div className="absolute bottom-[-10%] left-[-10%] w-[60%] h-[60%] rounded-full bg-primary-focus/50 blur-3xl" />
         </div>
         
-        <div className="container mx-auto px-6 py-20 relative z-10">
+        <div className="container mx-auto px-6 py-20 pt-28 relative z-10">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between">
             <motion.div 
               className="md:w-1/2 mb-10 md:mb-0"
@@ -94,7 +119,7 @@ export default function Home() {
                       <Logo className="w-32 h-32 mx-auto" />
                     </div>
                     <h2 className="text-2xl font-bold text-base-content">WynFin Dashboard</h2>
-                    <p className="text-gray-600 dark:text-gray-300 mt-2">Preview version 1.0</p>
+                    <p className="text-gray-600 dark:text-gray-400 mt-2">Preview version 1.0</p>
                     <div className="mt-6 grid grid-cols-2 gap-3 p-4">
                       <div className="h-3 bg-primary/20 rounded w-full"></div>
                       <div className="h-3 bg-accent/20 rounded w-full"></div>
@@ -139,7 +164,7 @@ export default function Home() {
                 <FancyCard className="p-6 h-full">
                   <div className="text-4xl mb-4">{feature.icon}</div>
                   <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
-                  <p className="text-gray-600 dark:text-gray-300">{feature.description}</p>
+                  <p className="text-gray-500">{feature.description}</p>
                 </FancyCard>
               </motion.div>
             ))}
