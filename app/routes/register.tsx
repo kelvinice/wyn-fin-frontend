@@ -69,7 +69,7 @@ export default function RegisterPage() {
     <div className="min-h-screen flex flex-col md:flex-row">
       {/* Left side - decorative */}
       <motion.div 
-        className="hidden md:flex md:w-1/2 bg-gradient-to-br from-primary to-primary-focus p-8 justify-center items-center"
+        className="hidden md:flex md:w-1/2 bg-linear-to-br from-primary to-primary-focus p-8 justify-center items-center"
         initial={{ opacity: 0, x: -50 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.2 }}
@@ -104,7 +104,7 @@ export default function RegisterPage() {
       </motion.div>
 
       {/* Right side - registration form */}
-      <div className="flex-grow flex items-center justify-center p-6 bg-base-100">
+      <div className="grow flex items-center justify-center p-6 bg-base-100">
         <motion.div
           className="w-full max-w-md"
           initial={{ opacity: 0, y: 30 }}

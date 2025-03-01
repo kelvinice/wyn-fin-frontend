@@ -15,7 +15,7 @@ export function SemesterChooser() {
 
   return (
     <select 
-      className="select select-bordered select-sm h-10 min-h-10 w-48 md:w-56 bg-base-100 focus:outline-none focus:ring-2 focus:ring-primary/20"
+      className="select select-bordered select-sm h-10 min-h-10 w-48 md:w-56 bg-base-100 focus:outline-hidden focus:ring-2 focus:ring-primary/20"
       value={currentSemester?.id || ""}
       onChange={(e) => {
         const semester = semesters?.find(s => s.id === parseInt(e.target.value));

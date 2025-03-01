@@ -21,7 +21,7 @@ export function NavLinkItem({
         className={`
           px-4 py-2 rounded-lg font-medium 
           transition-all duration-200 
-          outline-none focus:bg-primary/10 focus:text-primary
+          outline-hidden focus:bg-primary/10 focus:text-primary
           ${
             isActive
               ? "text-primary"

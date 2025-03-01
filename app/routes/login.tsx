@@ -47,7 +47,7 @@ export default function LoginPage() {
     <div className="min-h-screen flex flex-col md:flex-row">
       {/* Left side - decorative */}
       <motion.div 
-        className="hidden md:flex md:w-1/2 bg-gradient-to-br from-primary to-primary-focus p-8 justify-center items-center"
+        className="hidden md:flex md:w-1/2 bg-linear-to-br from-primary to-primary-focus p-8 justify-center items-center"
         initial={{ opacity: 0, x: -50 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.2 }}
@@ -82,7 +82,7 @@ export default function LoginPage() {
       </motion.div>
 
       {/* Right side - login form */}
-      <div className="flex-grow flex items-center justify-center p-6 bg-base-100">
+      <div className="grow flex items-center justify-center p-6 bg-base-100">
         <motion.div
           className="w-full max-w-md"
           initial={{ opacity: 0, y: 30 }}
@@ -114,7 +114,7 @@ export default function LoginPage() {
                   <span className="label-text">Email</span>
                 </label>
                 <div className="relative">
-                  <UserIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <UserIcon className="text-secondary absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-" />
                   <input
                     type="email"
                     placeholder="Enter your email"
