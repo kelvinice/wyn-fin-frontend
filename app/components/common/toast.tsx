@@ -69,7 +69,7 @@ export function Toast({
       transition={{ duration: 0.3 }}
       layout
     >
-      <div className={`alert shadow-lg ${getBgColor()} border w-full`}>
+      <div className={`alert shadow-lg ${getBgColor()} border w-full flex backdrop-blur-md`}>
         <div className="flex items-start gap-3 w-full pr-2">
           <div className="pt-0.5">{getIcon()}</div>
           <span className="text-sm line-clamp-3 text-pretty">{message}</span>

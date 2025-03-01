@@ -55,6 +55,9 @@ export default function LoginPage() {
       
       <form onSubmit={handleSubmit} className="space-y-6">
         <fieldset className="fieldset bg-base-200/50 border border-base-300 p-6 rounded-box">
+        <legend className="fieldset-legend bg-primary text-primary-content px-3 py-1 rounded-lg font-medium">
+            Sign in to your account
+          </legend>
           <div className="space-y-4">
             <div>
               <label className="fieldset-label text-sm font-medium mb-1 block">Email Address</label>
