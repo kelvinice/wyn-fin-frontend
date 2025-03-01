@@ -27,3 +27,4 @@ dist-ssr
 .env.local
 
 package-lock.json
+.react-router/
