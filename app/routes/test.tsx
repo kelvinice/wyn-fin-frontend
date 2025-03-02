@@ -3,7 +3,7 @@ import { Link, useFetcher } from "react-router";
 import type { Route } from "./+types/home";
 import { useToast } from "~/components/common/toast-context";
 import { LoadingButton } from "~/components/auth/components/loading-button";
-import { FancyCard } from "~/components/common/cards/card";
+import { FancyCard } from "~/components/common/cards/fancy-card";
 import { TiltAble } from "~/components/common/tiltable";
 import TestService from "~/services/test-service";
 import { ThemeSwitcher } from "~/components/common/theme-switcher";

@@ -1,22 +1,54 @@
-import { type RouteConfig, index, route } from "@react-router/dev/routes";
+import { type RouteConfig, index, route, layout, prefix } from "@react-router/dev/routes";
 
 export default [
-    // Use the dashboard component as your index route
-    index("routes/home.tsx"),
-    
-    // Define other routes
-    route("auth/login", "routes/login.tsx"),
-    route("auth/register", "routes/register.tsx"),
-    
-    // Keep dashboard as a named route but with a unique ID
+  // Homepage as index route
+  index("routes/home.tsx"),
+  
+  // Auth routes with shared layout
+  layout("routes/auth/layout.tsx", [
+    route("auth/login", "routes/auth/login.tsx"),
+    route("auth/register", "routes/auth/register.tsx"),
+  ]),
+  
+  // Dashboard and profile section
+  layout("routes/layouts/app-layout.tsx", [
     route("dashboard", "routes/dashboard.tsx", { id: "dashboard-route" }),
+    route("profile", "routes/profile.tsx"),
+    route("settings", "routes/settings.tsx"),
     
-    route("test", "routes/test.tsx"),
-    route("*", "routes/not-found.tsx"),
+    // Finances section with prefix
+    ...prefix("budget", [
+      index("routes/budget/index.tsx"),
+      // route(":id", "routes/budget/[id].tsx"),
+    ]),
     
-    // API Routes
-    route("api/ping", "routes/api/ping.tsx"),
-    route("api/set-theme", "routes/api/set-theme.tsx"),
-    route("api/auth/set-session", "routes/api/auth/set-session.tsx"),
-    route("api/auth/clear-session", "routes/api/auth/clear-session.tsx"),
+    ...prefix("spending", [
+      index("routes/spending/index.tsx"), 
+      // route("new", "routes/spending/new.tsx"),
+      // route(":id", "routes/spending/[id].tsx"),
+    ]),
+    
+    ...prefix("categories", [
+      index("routes/categories/index.tsx"),
+      // route(":type", "routes/categories/[type].tsx"),
+    ]),
+    
+    // route("accounts/connect", "routes/accounts/connect.tsx"),
+  ]),
+  
+  // API Routes
+  ...prefix("api", [
+    route("ping", "routes/api/ping.tsx"),
+    route("set-theme", "routes/api/set-theme.tsx"),
+    
+    // Nested API routes for auth
+    ...prefix("auth", [
+      route("set-session", "routes/api/auth/set-session.tsx"),
+      route("clear-session", "routes/api/auth/clear-session.tsx"),
+    ]),
+  ]),
+  
+  // Standalone routes
+  route("test", "routes/test.tsx"),
+  route("*", "routes/not-found.tsx"),
 ] satisfies RouteConfig;

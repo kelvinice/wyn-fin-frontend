@@ -11,12 +11,17 @@ type Params = {
   "/auth/login": {};
   "/auth/register": {};
   "/dashboard": {};
-  "/test": {};
-  "/*": {
-    "*": string;
-  };
+  "/profile": {};
+  "/settings": {};
+  "/budget": {};
+  "/spending": {};
+  "/categories": {};
   "/api/ping": {};
   "/api/set-theme": {};
   "/api/auth/set-session": {};
   "/api/auth/clear-session": {};
+  "/test": {};
+  "/*": {
+    "*": string;
+  };
 };

@@ -1,10 +1,8 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router";
-import { motion } from "framer-motion";
-import type { Route } from "./+types/home";
+import { useNavigate, Link } from "react-router";
+import type { Route } from "../+types/home";
 import type { SignInFormData } from "~/components/auth/core/models";
 import { useLogin } from "~/components/auth/components/hooks/useLogin";
-import { AuthLayout } from "~/components/auth/components/auth-layout";
 import { EmailInput } from "~/components/auth/components/email-input";
 import { PasswordInput } from "~/components/auth/components/password-input";
 import { LoadingButton } from "~/components/auth/components/loading-button";
@@ -44,18 +42,12 @@ export default function LoginPage() {
   };
 
   return (
-    <AuthLayout 
-      title="Sign In" 
-      subtitle="Financial manager and dashboard."
-      mobileTitleText="Welcome Back"
-      mobileSubtitleText="Sign in to continue"
-      footerText="By signing in, you agree to our Terms of Service and Privacy Policy."
-    >
+    <div>
       <ErrorAlert message={error} />
       
       <form onSubmit={handleSubmit} className="space-y-6">
         <fieldset className="fieldset bg-base-200/50 border border-base-300 p-6 rounded-box">
-        <legend className="fieldset-legend bg-primary text-primary-content px-3 py-1 rounded-lg font-medium">
+          <legend className="fieldset-legend bg-primary text-primary-content px-3 py-1 rounded-lg font-medium">
             Sign in to your account
           </legend>
           <div className="space-y-4">
@@ -105,6 +97,6 @@ export default function LoginPage() {
           Create Account
         </LoadingButton>
       </form>
-    </AuthLayout>
+    </div>
   );
 }

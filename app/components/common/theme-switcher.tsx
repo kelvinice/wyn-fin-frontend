@@ -8,7 +8,7 @@ export function ThemeSwitcher({ className = "" }: { className?: string }) {
   return (
     <motion.button
       aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
-      className={`relative p-2 rounded-full bg-base-200/50 hover:bg-base-300/60 transition-colors ${className}`}
+      className={`cursor-pointer relative p-2 rounded-full bg-base-200/50 hover:bg-base-300/60 transition-colors ${className}`}
       onClick={toggleTheme}
       whileTap={{ scale: 0.9 }}
       whileHover={{ scale: 1.05 }}

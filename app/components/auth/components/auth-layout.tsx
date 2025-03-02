@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { Link } from "react-router";
 import { Logo } from "~/components/common/logo";
 import { TiltAble } from "~/components/common/tiltable";
-import { FancyCard } from "~/components/common/cards/card";
+import { FancyCard } from "~/components/common/cards/fancy-card";
 
 interface AuthLayoutProps {
   children: React.ReactNode;

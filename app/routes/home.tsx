@@ -1,7 +1,7 @@
 import { Link } from "react-router";
 import { motion } from "framer-motion";
 import type { Route } from "./+types/home";
-import { FancyCard } from "~/components/common/cards/card";
+import { FancyCard } from "~/components/common/cards/fancy-card";
 import { Logo } from "~/components/common/logo";
 import { useIsAuthenticated } from "~/components/auth/components/auth-provider";
 import { ThemeSwitcher } from "~/components/common/theme-switcher";
@@ -57,7 +57,7 @@ export default function Home() {
                   Dashboard
                 </Link>
               ) : (
-                <Link to="/auth/login" className="btn btn-sm btn-outline border-primary-content/30 text-primary-content hover:border-primary-content/50 hover:bg-primary-content/10 md:text-base-content md:border-base-content/30 md:hover:border-base-content/50 md:hover:text-primary">
+                <Link to="/auth/login" className="btn btn-sm btn-outline btn border-primary-content/30 text-primary-content hover:border-primary-content/50 hover:bg-primary-content/10 md:text-base-content md:border-base-content/30 md:hover:border-base-content/50 md:hover:text-primary">
                   Sign In
                 </Link>
               )}
