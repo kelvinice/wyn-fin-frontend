@@ -50,12 +50,12 @@ export default function NotFoundPage() {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.8, duration: 0.5 }}
         >
-          <Link 
-            
+          <div 
+            onClick={() => window.history.back()}
             className="btn btn-secondary"
           >
             Back
-          </Link>
+          </div>
 
           <Link 
             to="/" 
