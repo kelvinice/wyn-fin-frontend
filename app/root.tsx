@@ -5,6 +5,7 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
+  useLoaderData,
 } from "react-router";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState } from "react";
@@ -14,6 +15,7 @@ import "./app.css";
 import { ThemeProvider } from "./components/common/theme-context";
 import { ToastProvider } from "./components/common/toast-context";
 import { AuthProvider } from "./components/auth/components/auth-provider";
+import { themeCookie, authTokenCookie, userDataCookie } from "./cookies.server";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -28,9 +30,39 @@ export const links: Route.LinksFunction = () => [
   },
 ];
 
+// Add root loader to get auth state from cookies
+export async function loader({ request }: Route.LoaderArgs) {
+  const cookieHeader = request.headers.get("Cookie");
+  
+  // Get theme preference
+  const themeCookieData = await themeCookie.parse(cookieHeader) || {};
+  
+  // Get auth state
+  const tokenData = await authTokenCookie.parse(cookieHeader);
+  const userDataStr = await userDataCookie.parse(cookieHeader);
+  
+  let userData = null;
+  if (userDataStr) {
+    try {
+      userData = JSON.parse(userDataStr);
+    } catch (error) {
+      console.error("Failed to parse user data from cookie:", error);
+    }
+  }
+  
+  return new Response(JSON.stringify({
+    theme: themeCookieData.theme || "light",
+    isAuthenticated: !!tokenData && !!userData,
+    user: userData,
+    token: tokenData
+  }), {
+    headers: { "Content-Type": "application/json" }
+  });
+}
+
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -48,11 +80,21 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
 export default function App() {
   const [queryClient] = useState(() => new QueryClient());
+  const loaderData = useLoaderData<{
+    theme: "light" | "dark",
+    isAuthenticated: boolean,
+    user: User | null,
+    token: string | null
+  }>();
   
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <ThemeProvider>
+      <AuthProvider initialAuthState={{
+        user: loaderData?.user || null,
+        token: loaderData?.token || null,
+        isAuthenticated: loaderData?.isAuthenticated || false
+      }}>
+        <ThemeProvider initialTheme={loaderData?.theme || "light"}>
           <ToastProvider>
             <Outlet />
           </ToastProvider>

@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { Navigate, useLocation, useNavigate } from 'react-router';
+import { Navigate, useLocation, useNavigate, useFetcher } from 'react-router';
 import type { User } from '../core/models';
-import AuthService from "~/services/auth-service";
 
 // Define the structure of our auth context
 type AuthContextType = {
@@ -10,6 +9,7 @@ type AuthContextType = {
   isAuthenticated: boolean;
   signIn: (token: string, user: User, expiresIn: number) => void;
   signOut: () => void;
+  getAuthToken: () => string | null; // Add this new method
 };
 
 // Create a context with a default value
@@ -19,9 +19,10 @@ const AuthContext = createContext<AuthContextType>({
   isAuthenticated: false,
   signIn: () => {},
   signOut: () => {},
+  getAuthToken: () => null,
 });
 
-// Safe client-side storage access to handle SSR
+// Safe client-side storage access as fallback for SSR
 const storage = {
   get: (key: string): string | null => {
     if (typeof window === 'undefined') return null;
@@ -51,13 +52,29 @@ const storage = {
 };
 
 // Define the auth provider component
-export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+export const AuthProvider = ({ 
+  children,
+  initialAuthState = { user: null, token: null, isAuthenticated: false } 
+}: { 
+  children: React.ReactNode,
+  initialAuthState?: {
+    user: User | null;
+    token: string | null;
+    isAuthenticated: boolean;
+  }
+}) => {
+  const [user, setUser] = useState<User | null>(initialAuthState.user);
+  const [token, setToken] = useState<string | null>(initialAuthState.token);
+  const [loading, setLoading] = useState(!initialAuthState.isAuthenticated);
+  const fetcher = useFetcher();
 
-  // Load saved auth data on first render (client-side only)
+  // Load saved auth data on first render (client-side only) if not provided via SSR
   useEffect(() => {
+    if (initialAuthState.isAuthenticated) {
+      setLoading(false);
+      return;
+    }
+    
     const savedToken = storage.get('auth_token');
     const savedUser = storage.get('auth_user');
     
@@ -74,22 +91,33 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
     
     setLoading(false);
-  }, []);
+  }, [initialAuthState.isAuthenticated]);
 
   // Sign in function
   const signIn = (authToken: string, userData: User, expiresIn: number) => {
     setToken(authToken);
     setUser(userData);
     
-    // Store in localStorage
+    // Store in localStorage as fallback
     storage.set('auth_token', authToken);
     storage.set('auth_user', JSON.stringify(userData));
     
-    // Set token expiration
+    // Set token expiration locally
     if (expiresIn) {
       const expirationTime = new Date().getTime() + expiresIn * 1000;
       storage.set('auth_expires', expirationTime.toString());
     }
+    
+    // Store auth data in cookies via server action
+    const formData = new FormData();
+    formData.append('token', authToken);
+    formData.append('userData', JSON.stringify(userData));
+    formData.append('expiresIn', expiresIn.toString());
+    
+    fetcher.submit(formData, {
+      method: 'post',
+      action: '/api/auth/set-session'
+    });
   };
   
   // Sign out function
@@ -97,10 +125,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setToken(null);
     setUser(null);
     
-    // Clear localStorage
+    // Clear localStorage fallback
     storage.remove('auth_token');
     storage.remove('auth_user');
     storage.remove('auth_expires');
+    
+    // Clear cookies via server action
+    fetcher.submit(null, {
+      method: 'post',
+      action: '/api/auth/clear-session'
+    });
   };
   
   // Check for token expiration
@@ -131,8 +165,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   
   const isAuthenticated = !!token && !!user;
 
+  const getAuthToken = () => {
+    return token;
+  };
+
   return (
-    <AuthContext.Provider value={{ user, token, isAuthenticated, signIn, signOut }}>
+    <AuthContext.Provider value={{ user, token, isAuthenticated, signIn, signOut, getAuthToken }}>
       {!loading && children}
     </AuthContext.Provider>
   );
@@ -168,6 +206,11 @@ export const useSignIn = () => {
 export const useSignOut = () => {
   const { signOut } = useAuth();
   return signOut; // Returns the function
+};
+
+export const useAuthToken = () => {
+  const { getAuthToken } = useAuth();
+  return getAuthToken();
 };
 
 // RequireAuth component for protected routes that works with SSR
@@ -206,21 +249,20 @@ export const RequireAuth = ({ children, fallbackPath = "/auth/login" }: {
 
 // Route loader function for React Router v7 data loading API
 export const authLoader = (redirectTo = "/auth/login") => {
-  // This works with React Router's loader API
-  return () => {
-    // We can't directly access context in a loader function
-    // So we check localStorage directly
+  return async ({ request }: { request: Request }) => {
+    // For server-side rendering, we'll use cookies
+    const cookieHeader = request.headers.get("Cookie");
+    
+    // Client-side fallback
     if (typeof window !== 'undefined') {
       const hasToken = !!storage.get('auth_token');
       const hasUser = !!storage.get('auth_user');
       
       if (!hasToken || !hasUser) {
-        // Return redirect instruction for React Router
         return { redirect: redirectTo };
       }
     }
     
-    // Continue to the protected route
     return null;
   };
 };

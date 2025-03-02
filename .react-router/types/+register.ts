@@ -15,4 +15,8 @@ type Params = {
   "/*": {
     "*": string;
   };
+  "/api/ping": {};
+  "/api/set-theme": {};
+  "/api/auth/set-session": {};
+  "/api/auth/clear-session": {};
 };

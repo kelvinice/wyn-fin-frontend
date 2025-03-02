@@ -6,7 +6,7 @@ import { useToast } from "~/components/common/toast-context";
 import { FancyCard } from "~/components/common/cards/card";
 import { LoadingButton } from "~/components/auth/components/loading-button";
 import type { User } from "~/components/auth/core/models";
-import UsersService from "~/services/users-service";
+import { useUsersService } from "~/hooks/use-service";
 import type { Route } from "../+types/root";
 import { ThemeSwitcher } from "~/components/common/theme-switcher";
 
@@ -26,22 +26,17 @@ export default function DashboardPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [profileData, setProfileData] = useState<User | null>(null);
   
-  // Client-side only effect
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  // Get the authenticated users service
+  const usersService = useUsersService();
   
-  // Fetch user profile data - only run on client side after mount
+  // Fetch user profile data when authenticated
   useEffect(() => {
-    if (!mounted) return; // Skip during SSR
-    
     if (isAuthenticated) {
-      const userService = new UsersService();
       setIsLoading(true);
       
-      userService.getMe()
+      usersService.getMe()
         .then(user => {
+          console.log("Profile data:", user);
           setProfileData(user);
         })
         .catch(error => {
@@ -52,7 +47,7 @@ export default function DashboardPage() {
           setIsLoading(false);
         });
     }
-  }, [mounted, isAuthenticated]);
+  }, [isAuthenticated]);
   
   const handleSignOut = () => {
     signOut();

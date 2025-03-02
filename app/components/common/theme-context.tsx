@@ -1,15 +1,17 @@
 import { createContext, useContext, useState, useMemo, useEffect } from 'react';
+import { useFetcher } from 'react-router';
 
 type Theme = 'light' | 'dark';
 
 interface ThemeContextType {
   theme: Theme;
   toggleTheme: () => void;
+  isLoading: boolean;
 }
 
 const THEME_KEY = 'default-theme';
 
-// Safe storage wrapper
+// Safe storage wrapper for fallback
 const storage = {
   get: (key: string) => {
     if (typeof window === 'undefined') return null;
@@ -32,24 +34,86 @@ const storage = {
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
-export function ThemeProvider({ children }: { children: React.ReactNode }) {
+export function ThemeProvider({ 
+  children, 
+  initialTheme = 'light' 
+}: { 
+  children: React.ReactNode,
+  initialTheme?: Theme 
+}) {
+  // Use stored theme as fallback if available
   const [theme, setTheme] = useState<Theme>(() => {
-    const saved = storage.get(THEME_KEY);
-    return (saved as Theme) || 'light';
+    // First priority: initialTheme from server
+    if (initialTheme) return initialTheme;
+    
+    // Second priority: localStorage
+    if (typeof window !== 'undefined') {
+      const storedTheme = storage.get(THEME_KEY);
+      if (storedTheme === 'light' || storedTheme === 'dark') {
+        return storedTheme as Theme;
+      }
+    }
+    
+    // Default fallback
+    return 'light';
   });
+  
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const fetcher = useFetcher();
 
+  // Apply theme on change
   useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme);
-    storage.set(THEME_KEY, theme);
+    if (typeof document !== 'undefined') {
+      document.documentElement.setAttribute('data-theme', theme);
+    }
+    storage.set(THEME_KEY, theme); // Keep localStorage as fallback
   }, [theme]);
 
   const value = useMemo(() => ({
     theme,
+    isLoading,
     toggleTheme: () => {
-      const newTheme = theme === 'light' ? 'dark' : 'light';
-      setTheme(newTheme);
+      try {
+        const newTheme = theme === 'light' ? 'dark' : 'light';
+        setIsLoading(true);
+        setError(null);
+        setTheme(newTheme); // Update immediately for UI
+
+        // Set cookie via server action
+        const formData = new FormData();
+        formData.append('theme', newTheme);
+        
+        fetcher.submit(
+          formData,
+          { method: 'post', action: '/api/set-theme' }
+        );
+      } catch (err) {
+        console.error("Error toggling theme:", err);
+        setError(err instanceof Error ? err.message : "Unknown error");
+        setIsLoading(false);
+      }
     }
-  }), [theme]);
+  }), [theme, isLoading, fetcher]);
+
+  // When the fetch action completes
+  useEffect(() => {
+    if (fetcher.state === 'idle') {
+      setIsLoading(false);
+      
+      if (fetcher.data && fetcher.data.success === false) {
+        console.error('Theme cookie set error:', fetcher.data.message);
+        setError(fetcher.data.message || "Failed to save theme preference");
+      }
+    }
+  }, [fetcher.state, fetcher.data]);
+
+  // Show any errors if debugging
+  useEffect(() => {
+    if (error) {
+      console.error("Theme context error:", error);
+    }
+  }, [error]);
 
   return (
     <ThemeContext.Provider value={value}>

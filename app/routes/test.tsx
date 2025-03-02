@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link } from "react-router";
+import React, { useState } from "react";
+import { Link, useFetcher } from "react-router";
 import type { Route } from "./+types/home";
 import { useToast } from "~/components/common/toast-context";
 import { LoadingButton } from "~/components/auth/components/loading-button";
@@ -22,6 +22,10 @@ export default function TestPage() {
   const [pingLoading, setPingLoading] = useState(false);
   const [pingError, setPingError] = useState<string | null>(null);
   
+  // For the action ping test
+  const pingFetcher = useFetcher();
+  const [pingActionResponse, setPingActionResponse] = useState<string | null>(null);
+  
   // States for user data
   const [userData, setUserData] = useState<any>(null);
   const [userLoading, setUserLoading] = useState(false);
@@ -34,7 +38,7 @@ export default function TestPage() {
     setTimeout(() => setIsLoading(false), 2000);
   };
   
-  // Function to test the ping endpoint
+  // Function to test the ping endpoint via GET
   const testPingEndpoint = async () => {
     setPingLoading(true);
     setPingError(null);
@@ -54,6 +58,27 @@ export default function TestPage() {
       setPingLoading(false);
     }
   };
+  
+  // Function to test the ping endpoint via POST (action)
+  const testPingAction = () => {
+    setPingActionResponse(null);
+    
+    pingFetcher.submit(
+      {}, // Empty form data
+      { method: 'post', action: '/api/ping' }
+    );
+  };
+  
+  // Update state when ping action response changes
+  React.useEffect(() => {
+    if (pingFetcher.data && pingFetcher.state === 'idle') {
+      setPingActionResponse(JSON.stringify(pingFetcher.data, null, 2));
+      
+      if (pingFetcher.data.message) {
+        showToast(`Action API responded: ${pingFetcher.data.message}`, 'info');
+      }
+    }
+  }, [pingFetcher.data, pingFetcher.state, showToast]);
   
   // Function to test the me endpoint
   const testMeEndpoint = async () => {
@@ -228,7 +253,7 @@ export default function TestPage() {
             <div className="grid md:grid-cols-2 gap-6">
               {/* API Test section */}
               <FancyCard className="p-6">
-                <h2 className="text-xl font-semibold mb-4">API Connection Test</h2>
+                <h2 className="text-xl font-semibold mb-4">API Connection Test (GET)</h2>
                 <div className="space-y-4">
                   <div className="flex justify-between items-center">
                     <span className="text-gray-600 dark:text-gray-300">Test endpoint:</span>
@@ -259,11 +284,44 @@ export default function TestPage() {
                     className="btn btn-primary w-full"
                     onClick={testPingEndpoint}
                   >
-                    Test API Connection
+                    Test API Connection (GET)
                   </LoadingButton>
                   
                   <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
                     This will attempt to connect to the backend API at {import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000/'}
+                  </p>
+                </div>
+              </FancyCard>
+              
+              {/* API Action Test section */}
+              <FancyCard className="p-6">
+                <h2 className="text-xl font-semibold mb-4">API Action Test (POST)</h2>
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-600 dark:text-gray-300">Test action endpoint:</span>
+                    <code className="bg-base-200 px-2 py-1 rounded text-sm">/api/ping</code>
+                  </div>
+                  
+                  {pingActionResponse && (
+                    <div className="bg-info/10 border border-info/30 rounded-lg p-3">
+                      <p className="text-sm font-medium">Response:</p>
+                      <pre className="block mt-1 text-info-content bg-info/5 p-2 rounded text-xs overflow-auto">
+                        {pingActionResponse}
+                      </pre>
+                    </div>
+                  )}
+                  
+                  <LoadingButton 
+                    isLoading={pingFetcher.state !== 'idle'} 
+                    loadingText="Submitting..."
+                    className="btn btn-accent w-full"
+                    onClick={testPingAction}
+                  >
+                    Test React Router Action (POST)
+                  </LoadingButton>
+                  
+                  <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
+                    This will test the action handler in the /api/ping route using React Router's action system
                   </p>
                 </div>
               </FancyCard>

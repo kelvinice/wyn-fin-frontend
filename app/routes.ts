@@ -13,4 +13,10 @@ export default [
     
     route("test", "routes/test.tsx"),
     route("*", "routes/not-found.tsx"),
+    
+    // API Routes
+    route("api/ping", "routes/api/ping.tsx"),
+    route("api/set-theme", "routes/api/set-theme.tsx"),
+    route("api/auth/set-session", "routes/api/auth/set-session.tsx"),
+    route("api/auth/clear-session", "routes/api/auth/clear-session.tsx"),
 ] satisfies RouteConfig;
