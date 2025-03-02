@@ -9,6 +9,7 @@ import { useUsersService } from "~/hooks/use-service";
 import type { Route } from "../+types/root";
 import { ArrowLeftIcon, BellIcon, ShieldCheckIcon, UserCircleIcon, WrenchScrewdriverIcon } from "@heroicons/react/24/outline";
 import { ThemeSwitcher } from "~/components/common/theme-switcher";
+import { EmailInput } from "~/components/auth/components/email-input";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -78,14 +79,7 @@ export default function SettingsPage() {
             <p className="text-gray-600 dark:text-gray-300 mt-1">
               Manage your account preferences
             </p>
-          </div>
-          
-          <div className="mt-4 md:mt-0">
-            <Link to="/dashboard" className="btn btn-outline btn-sm gap-2">
-              <ArrowLeftIcon className="w-4 h-4" />
-              Back to Dashboard
-            </Link>
-          </div>
+          </div>      
         </div>
         
         <div className="grid md:grid-cols-4 gap-6">
@@ -196,11 +190,10 @@ export default function SettingsPage() {
                     <div className="space-y-6">
                       <div>
                         <label className="font-medium mb-2 block">Email</label>
-                        <input 
-                          type="email" 
-                          className="input input-bordered w-full md:w-64" 
-                          value={auth.user.email} 
-                          readOnly 
+                        <EmailInput
+                            value={auth.user?.email}
+                            readOnly
+                            label=""
                         />
                         <p className="text-sm text-gray-500 mt-1">Email address associated with your account</p>
                       </div>

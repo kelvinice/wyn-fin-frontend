@@ -25,12 +25,6 @@ export default function CategoriesPage() {
               Manage your expense categories, income sources, and more
             </p>
           </div>
-          
-          <div className="mt-4 md:mt-0">
-            <Link to="/dashboard" className="btn btn-outline btn-sm">
-              Back to Dashboard
-            </Link>
-          </div>
         </div>
         
         {/* Tab Navigation */}

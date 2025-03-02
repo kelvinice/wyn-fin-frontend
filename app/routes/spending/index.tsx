@@ -24,9 +24,6 @@ export default function SpendingPage() {
           </div>
           
           <div className="mt-4 md:mt-0 flex gap-2">
-            <Link to="/dashboard" className="btn btn-outline btn-sm">
-              Back to Dashboard
-            </Link>
             <Link to="/spending/new" className="btn btn-primary btn-sm">
               Add Transaction
             </Link>

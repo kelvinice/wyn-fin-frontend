@@ -25,9 +25,7 @@ export default function BudgetPage() {
           </div>
           
           <div className="mt-4 md:mt-0 flex gap-2">
-            <Link to="/dashboard" className="btn btn-outline btn-sm">
-              Back to Dashboard
-            </Link>
+            
             <button className="btn btn-primary btn-sm">
               Create New Budget
             </button>

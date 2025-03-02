@@ -52,7 +52,7 @@ export default function ProfilePage() {
           setIsLoading(false);
         });
     }
-  }, [isAuthenticated, usersService, showToast]);
+  }, [isAuthenticated]);
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -84,13 +84,6 @@ export default function ProfilePage() {
             <p className="text-gray-600 dark:text-gray-300 mt-1">
               Update your account information
             </p>
-          </div>
-          
-          <div className="mt-4 md:mt-0">
-            <Link to="/dashboard" className="btn btn-outline btn-sm gap-2">
-              <ArrowLeftIcon className="w-4 h-4" />
-              Back to Dashboard
-            </Link>
           </div>
         </div>
         
@@ -124,7 +117,7 @@ export default function ProfilePage() {
                         <EmailInput 
                           value={email}
                           onChange={setEmail}
-                          disabled={true}
+                          readOnly={true}
                           label=""
                         />
                         <p className="text-xs text-gray-500 mt-1">

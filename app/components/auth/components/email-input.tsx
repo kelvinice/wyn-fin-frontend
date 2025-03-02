@@ -7,6 +7,8 @@ interface EmailInputProps {
   required?: boolean;
   label?: string;
   useEnvelopeIcon?: boolean;
+  readOnly?: boolean;
+  disabled?: boolean;
 }
 
 export function EmailInput({
@@ -15,7 +17,9 @@ export function EmailInput({
   placeholder = "Enter your email",
   required = true,
   label = "Email",
-  useEnvelopeIcon = true, // Changed default to true
+  useEnvelopeIcon = true,
+  readOnly = false,
+  disabled = false
 }: EmailInputProps) {
   const Icon = useEnvelopeIcon ? EnvelopeIcon : UserIcon;
   
@@ -30,12 +34,14 @@ export function EmailInput({
         <input
           type="email"
           placeholder={placeholder}
-          className="input input-bordered pl-10 w-full 
+          className={`input input-bordered pl-10 w-full 
                     focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/30
-                    transition-all duration-200"
+                    transition-all duration-200 ${readOnly ? 'bg-base-200/50' : ''}`}
           value={value}
           onChange={(e) => onChange(e.target.value)}
           required={required}
+          readOnly={readOnly}
+          disabled={disabled}
         />
       </div>
     </div>

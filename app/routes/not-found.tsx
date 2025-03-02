@@ -45,11 +45,18 @@ export default function NotFoundPage() {
         </motion.p>
         
         <motion.div
-          className="mt-8"
+          className="mt-8 flex gap-4 justify-center"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.8, duration: 0.5 }}
         >
+          <Link 
+            
+            className="btn btn-secondary"
+          >
+            Back
+          </Link>
+
           <Link 
             to="/" 
             className="btn btn-primary"
