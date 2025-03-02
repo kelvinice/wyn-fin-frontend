@@ -10,21 +10,28 @@ export default class BaseService {
             headers: {
                 'Content-Type': 'application/json',
             },
+            withCredentials: true, // This is critical for cookies
         });
 
-        // Add auth token to requests if available
+        // Add request interceptor for debugging
         this._axios.interceptors.request.use(
-            (config) => {
-                // Safe access for SSR
-                if (typeof window !== 'undefined') {
-                    const token = localStorage.getItem('auth_token');
-                    if (token) {
-                        config.headers.Authorization = `Bearer ${token}`;
-                    }
-                }
+            config => {
+                console.log('Request headers:', config.headers);
                 return config;
             },
-            (error) => {
+            error => {
+                return Promise.reject(error);
+            }
+        );
+
+        // Add response interceptor for debugging
+        this._axios.interceptors.response.use(
+            response => {
+                console.log('Response cookies:', document.cookie);
+                return response;
+            },
+            error => {
+                console.error('API error:', error);
                 return Promise.reject(error);
             }
         );

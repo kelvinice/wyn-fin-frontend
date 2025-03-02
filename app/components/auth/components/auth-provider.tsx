@@ -1,7 +1,13 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { Navigate, useLocation, useNavigate } from 'react-router';
+import { Navigate, useLocation, useNavigate, useFetcher } from 'react-router';
 import type { User } from '../core/models';
-import AuthService from "~/services/auth-service";
+
+// Define initial auth state type
+type InitialAuthState = {
+  user: User | null;
+  token: string | null;
+  isAuthenticated: boolean;
+};
 
 // Define the structure of our auth context
 type AuthContextType = {
@@ -21,75 +27,52 @@ const AuthContext = createContext<AuthContextType>({
   signOut: () => {},
 });
 
-// Safe client-side storage access to handle SSR
-const storage = {
-  get: (key: string): string | null => {
-    if (typeof window === 'undefined') return null;
-    try {
-      return localStorage.getItem(key);
-    } catch (e) {
-      console.error('Error accessing localStorage:', e);
-      return null;
-    }
-  },
-  set: (key: string, value: string): void => {
-    if (typeof window === 'undefined') return;
-    try {
-      localStorage.setItem(key, value);
-    } catch (e) {
-      console.error('Error writing to localStorage:', e);
-    }
-  },
-  remove: (key: string): void => {
-    if (typeof window === 'undefined') return;
-    try {
-      localStorage.removeItem(key);
-    } catch (e) {
-      console.error('Error removing from localStorage:', e);
-    }
-  }
-};
-
 // Define the auth provider component
-export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  // Load saved auth data on first render (client-side only)
+export const AuthProvider = ({ 
+  children, 
+  initialAuthState = { user: null, token: null, isAuthenticated: false }
+}: { 
+  children: React.ReactNode, 
+  initialAuthState?: InitialAuthState 
+}) => {
+  const [user, setUser] = useState<User | null>(initialAuthState.user);
+  const [token, setToken] = useState<string | null>(initialAuthState.token);
+  const [loading, setLoading] = useState(!initialAuthState.isAuthenticated);
+  const fetcher = useFetcher();
+  
+  // Initial state is now set entirely from server-provided cookies
+  // No need to load from localStorage
   useEffect(() => {
-    const savedToken = storage.get('auth_token');
-    const savedUser = storage.get('auth_user');
-    
-    if (savedToken && savedUser) {
-      try {
-        setToken(savedToken);
-        setUser(JSON.parse(savedUser));
-      } catch (error) {
-        console.error('Failed to parse stored user data:', error);
-        // Clear invalid data
-        storage.remove('auth_token');
-        storage.remove('auth_user');
-      }
-    }
-    
+    // We already have auth data from the server via initialAuthState
     setLoading(false);
-  }, []);
+    console.log("Auth Provider initialized with:", {
+      hasUser: !!initialAuthState.user,
+      hasToken: !!initialAuthState.token,
+      isAuthenticated: initialAuthState.isAuthenticated
+    });
+  }, [initialAuthState.isAuthenticated, initialAuthState.user, initialAuthState.token]);
 
   // Sign in function
   const signIn = (authToken: string, userData: User, expiresIn: number) => {
+    console.log("Signing in with token and user data");
+    console.log("Setting cookies for authentication:", {
+      token: authToken?.substring(0, 10) + "...",
+      hasUserData: !!userData,
+      expiresIn
+    });
     setToken(authToken);
     setUser(userData);
     
-    // Store in localStorage
-    storage.set('auth_token', authToken);
-    storage.set('auth_user', JSON.stringify(userData));
+    // Send to server to set auth cookies
+    const formData = new FormData();
+    formData.append('token', authToken);
+    formData.append('userData', JSON.stringify(userData));
+    formData.append('expiresIn', expiresIn.toString());
     
-    // Set token expiration
-    if (expiresIn) {
-      const expirationTime = new Date().getTime() + expiresIn * 1000;
-      storage.set('auth_expires', expirationTime.toString());
-    }
+    fetcher.submit(formData, { 
+      method: 'post', 
+      action: '/api/auth/set-session'
+    });
   };
   
   // Sign out function
@@ -97,37 +80,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setToken(null);
     setUser(null);
     
-    // Clear localStorage
-    storage.remove('auth_token');
-    storage.remove('auth_user');
-    storage.remove('auth_expires');
+    // Clear cookies via server action
+    fetcher.submit(null, {
+      method: 'post',
+      action: '/api/auth/clear-session'
+    });
   };
   
-  // Check for token expiration
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    
-    const checkTokenExpiration = () => {
-      const expiration = storage.get('auth_expires');
-      if (expiration && token) {
-        const expirationTime = parseInt(expiration, 10);
-        const currentTime = new Date().getTime();
-        
-        if (currentTime > expirationTime) {
-          console.log('Token expired, logging out');
-          signOut();
-        }
-      }
-    };
-    
-    // Check immediately
-    checkTokenExpiration();
-    
-    // Then set up interval to check periodically
-    const interval = setInterval(checkTokenExpiration, 60000); // Check every minute
-    
-    return () => clearInterval(interval);
-  }, [token]);
+  // The check for token expiration is now handled server-side by the cookie expiry
+  // No need for client-side checking
   
   const isAuthenticated = !!token && !!user;
 
@@ -160,6 +121,7 @@ export const useIsAuthenticated = () => {
 
 export const useSignIn = () => {
   const { signIn } = useAuth();
+  // Change this to handle the object parameter
   return (data: {token: string, user: User, expiresIn: number}) => {
     return signIn(data.token, data.user, data.expiresIn);
   };
@@ -206,21 +168,10 @@ export const RequireAuth = ({ children, fallbackPath = "/auth/login" }: {
 
 // Route loader function for React Router v7 data loading API
 export const authLoader = (redirectTo = "/auth/login") => {
-  // This works with React Router's loader API
-  return () => {
-    // We can't directly access context in a loader function
-    // So we check localStorage directly
-    if (typeof window !== 'undefined') {
-      const hasToken = !!storage.get('auth_token');
-      const hasUser = !!storage.get('auth_user');
-      
-      if (!hasToken || !hasUser) {
-        // Return redirect instruction for React Router
-        return { redirect: redirectTo };
-      }
-    }
-    
-    // Continue to the protected route
+  return async ({ request }: { request: Request }) => {
+    // We no longer need to check localStorage
+    // All authentication checks are done via cookies
+    // on the server when the request is processed
     return null;
   };
 };

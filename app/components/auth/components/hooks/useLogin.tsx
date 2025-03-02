@@ -10,16 +10,21 @@ export function useLogin() {
   
   return useMutation({
     mutationFn: async (data: SignInFormData): Promise<AuthResponse> => {
-      const response = await authService.login(data);
-      
-      // Save auth data using our custom hook
-      signIn({
-        token: response.token,
-        user: response.user,
-        expiresIn: response.expiresIn
-      });
-      
-      return response;
+      try {
+        const response = await authService.login(data);
+        
+        // Save auth data using our custom hook
+        signIn({
+          token: response.token,
+          user: response.user,
+          expiresIn: response.expiresIn
+        });
+        
+        return response;
+      } catch (error) {
+        console.error("Login error:", error);
+        throw error;
+      }
     },
   });
 }

@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router";
-import { motion } from "framer-motion";
 import type { Route } from "./+types/home";
 import type { SignInFormData } from "~/components/auth/core/models";
 import { useLogin } from "~/components/auth/components/hooks/useLogin";
