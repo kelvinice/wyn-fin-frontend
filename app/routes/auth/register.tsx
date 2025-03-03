@@ -45,15 +45,16 @@ export default function RegisterPage() {
 
     const registerData: RegisterFormData = {
       email,
-      password
+      password,
+      passwordConfirm,
     };
 
     register(registerData, {
       onSuccess: () => {
-        showToast({
-          type: "success",
-          message: "Account created successfully! You can now sign in.",
-        });
+        showToast(
+          "Account created successfully! You can now sign in.",
+          "success"
+        );
         navigate("/auth/login");
       },
       onError: (err) => {

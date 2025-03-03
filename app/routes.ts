@@ -3,6 +3,8 @@ import { type RouteConfig, index, route, layout, prefix } from "@react-router/de
 export default [
   // Homepage as index route
   index("routes/home.tsx"),
+
+  route("about", "routes/about.tsx"),
   
   // Auth routes with shared layout
   layout("routes/auth/layout.tsx", [
