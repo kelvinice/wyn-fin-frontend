@@ -22,47 +22,61 @@ export function Toast({
   show 
 }: ToastProps) {
   const [isVisible, setIsVisible] = useState(show);
+  const [animationStarted, setAnimationStarted] = useState(false);
   const [progress, setProgress] = useState(100);
   
-  const timerRef = useRef<{interval: NodeJS.Timeout | null}>({ interval: null });
+  const timerRef = useRef<{
+    rafId: number | null,
+    startTime: number | null,
+    endTime: number | null
+  }>({ 
+    rafId: null, 
+    startTime: null,
+    endTime: null
+  });
   
   useEffect(() => {
-    console.log(`Toast ${id} initialized with duration ${duration}ms`);
-    
-    if (timerRef.current.interval) {
-      clearInterval(timerRef.current.interval);
+    if (timerRef.current.rafId) {
+      cancelAnimationFrame(timerRef.current.rafId);
+      timerRef.current.rafId = null;
     }
     
     if (show && duration > 0) {
+      // Set initial state
+      setProgress(100);
+      
+      // Use RAF for smoother animation
       const startTime = Date.now();
       const endTime = startTime + duration;
       
-      timerRef.current.interval = setInterval(() => {
-        const now = Date.now();
-        const remaining = endTime - now;
-        const newProgress = Math.max(0, (remaining / duration) * 100);
-        
-        setProgress(newProgress);
-        
-        if (now >= endTime) {
-          if (timerRef.current.interval) {
-            clearInterval(timerRef.current.interval);
-            timerRef.current.interval = null;
-          }
-          setIsVisible(false);
-          setTimeout(() => {
-            if (onClose) onClose();
-          }, 300);
-        }
-      }, 16);
+      timerRef.current.startTime = startTime;
+      timerRef.current.endTime = endTime;
+      
+      // Small delay to ensure the component has rendered
+      setTimeout(() => {
+        setAnimationStarted(true);
+        setProgress(0);
+      }, 10);
+      
+      // Use timeout for the actual closing
+      const closeTimeout = setTimeout(() => {
+        setIsVisible(false);
+        setTimeout(() => {
+          if (onClose) onClose();
+        }, 300);
+      }, duration);
+      
+      return () => {
+        clearTimeout(closeTimeout);
+      };
     }
     
     return () => {
-      if (timerRef.current.interval) {
-        clearInterval(timerRef.current.interval);
+      if (timerRef.current.rafId) {
+        cancelAnimationFrame(timerRef.current.rafId);
       }
     };
-  }, [id]);
+  }, [id, show, duration, onClose]);
   
   const getIcon = () => {
     switch (type) {
@@ -130,13 +144,16 @@ export function Toast({
         </button>
         
         {duration > 0 && (
-          <div 
-            className={`absolute bottom-0 left-0 h-0.5 ${getProgressColor()} opacity-80 dark:opacity-60`}
-            style={{ 
-              width: `${progress}%`,
-              transition: "width 100ms linear"
-            }}
-          />
+          <div className="absolute bottom-0 left-0 w-full h-0.5 bg-base-300/20">
+            <div 
+              className={`h-full ${getProgressColor()} opacity-80 dark:opacity-60`}
+              style={{ 
+                width: animationStarted ? '0%' : '100%',
+                transition: `width ${duration}ms linear`,
+                transformOrigin: 'left'
+              }}
+            />
+          </div>
         )}
       </div>
     </motion.div>
