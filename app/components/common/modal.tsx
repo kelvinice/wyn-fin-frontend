@@ -1,4 +1,4 @@
-import { Dialog, Transition } from "@headlessui/react";
+import { Dialog, DialogPanel, DialogTitle, Transition, TransitionChild } from "@headlessui/react";
 import { Fragment, type ReactNode } from "react";
 import { motion } from "framer-motion";
 import { XMarkIcon } from "@heroicons/react/24/outline";
@@ -36,7 +36,7 @@ export function Modal({
         className="relative z-50"
         onClose={closeOnClickOutside ? onClose : () => {}}
       >
-        <Transition.Child
+        <TransitionChild
           as={Fragment}
           enter="ease-out duration-300"
           enterFrom="opacity-0"
@@ -46,11 +46,11 @@ export function Modal({
           leaveTo="opacity-0"
         >
           <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" />
-        </Transition.Child>
+        </TransitionChild>
 
         <div className="fixed inset-0 overflow-y-auto">
           <div className="flex min-h-full items-center justify-center p-4 text-center">
-            <Transition.Child
+            <TransitionChild
               as={Fragment}
               enter="ease-out duration-300"
               enterFrom="opacity-0 scale-95"
@@ -59,10 +59,10 @@ export function Modal({
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-95"
             >
-              <Dialog.Panel 
+              <DialogPanel 
                 className={`w-full ${sizeClasses[size]} transform overflow-hidden rounded-xl bg-base-100 text-left align-middle shadow-xl transition-all`}
               >
-                <Dialog.Title
+                <DialogTitle
                   as="div"
                   className="flex justify-between items-center border-b border-base-200 p-4"
                 >
@@ -74,7 +74,7 @@ export function Modal({
                   >
                     <XMarkIcon className="w-5 h-5" />
                   </button>
-                </Dialog.Title>
+                </DialogTitle>
                 
                 <div className="p-6">{children}</div>
                 
@@ -83,8 +83,8 @@ export function Modal({
                     {footer}
                   </div>
                 )}
-              </Dialog.Panel>
-            </Transition.Child>
+              </DialogPanel>
+            </TransitionChild>
           </div>
         </div>
       </Dialog>

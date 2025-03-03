@@ -1,6 +1,7 @@
 import { ExclamationTriangleIcon } from "@heroicons/react/24/outline";
 import { Modal } from "~/components/common/modal";
 import { LoadingButton } from "~/components/auth/components/loading-button";
+import { NonCopyableText } from "../common/text/non-copyable-text";
 
 interface DeleteAccountModalProps {
   isOpen: boolean;
@@ -19,6 +20,7 @@ export function DeleteAccountModal({
   onConfirm,
   isDeleting
 }: DeleteAccountModalProps) {
+
   return (
     <Modal
       isOpen={isOpen}
@@ -59,17 +61,25 @@ export function DeleteAccountModal({
         </div>
         
         <p className="text-sm">
-          To confirm, please type <span className="font-mono font-medium">delete my account</span> below:
+          To confirm, please type <NonCopyableText 
+            className="font-mono font-medium"
+          >delete my account</NonCopyableText> below:
         </p>
         
-        <input
-          type="text"
-          className="input input-bordered w-full"
-          placeholder="delete my account"
-          value={deleteConfirmText}
-          onChange={(e) => setDeleteConfirmText(e.target.value)}
-          disabled={isDeleting}
-        />
+        <div className="relative">
+          <input
+            type="text"
+            className="input input-bordered w-full"
+            placeholder="Type the confirmation phrase"
+            value={deleteConfirmText}
+            onChange={(e) => setDeleteConfirmText(e.target.value)}
+            disabled={isDeleting}
+            autoComplete="off"
+            autoCorrect="off"
+            autoCapitalize="off"
+            spellCheck="false"
+          />
+        </div>
       </div>
     </Modal>
   );
