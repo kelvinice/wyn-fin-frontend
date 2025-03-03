@@ -19,7 +19,7 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const { mutate: login, isPending: isLoading, error: loginError } = useLogin();
+  const { mutate: login, isPending: isLoading} = useLogin();
   const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -35,8 +35,11 @@ export default function LoginPage() {
       onSuccess: () => {
         navigate("/dashboard");
       },
-      onError: (err) => {
-        setError(err instanceof Error ? err.message : "Invalid email or password");
+      onError: (err: any) => {
+        const errorMsg = err?.response?.data?.message || 
+                         err?.message || 
+                         "Invalid email or password";
+        setError(errorMsg);
       }
     });
   };
