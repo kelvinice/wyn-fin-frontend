@@ -6,11 +6,11 @@ export default class BaseService {
 
     constructor() {
         this._axios = axios.create({
-            baseURL: import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000/',
+            baseURL: import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000/api/',
             headers: {
                 'Content-Type': 'application/json',
             },
-            withCredentials: true, // This ensures cookies are sent automatically
+            withCredentials: true, 
         });
 
         // Add request interceptor to include auth token from localStorage as fallback

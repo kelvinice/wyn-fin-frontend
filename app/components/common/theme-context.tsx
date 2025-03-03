@@ -66,6 +66,13 @@ export function ThemeProvider({
   useEffect(() => {
     if (typeof document !== 'undefined') {
       document.documentElement.setAttribute('data-theme', theme);
+      
+      // Add or remove the dark class based on the theme
+      if (theme === 'dark') {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
     }
     storage.set(THEME_KEY, theme); // Keep localStorage as fallback
   }, [theme]);
@@ -79,8 +86,6 @@ export function ThemeProvider({
         setIsLoading(true);
         setError(null);
         setTheme(newTheme); // Update immediately for UI
-
-        // Set cookie via server action
         const formData = new FormData();
         formData.append('theme', newTheme);
         

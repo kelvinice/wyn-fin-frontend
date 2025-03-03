@@ -7,6 +7,7 @@ import { FancyCard } from "~/components/common/cards/fancy-card";
 import { TiltAble } from "~/components/common/tiltable";
 import TestService from "~/services/test-service";
 import { ThemeSwitcher } from "~/components/common/theme-switcher";
+import clsx from 'clsx';
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -73,12 +74,8 @@ export default function TestPage() {
   React.useEffect(() => {
     if (pingFetcher.data && pingFetcher.state === 'idle') {
       setPingActionResponse(JSON.stringify(pingFetcher.data, null, 2));
-      
-      if (pingFetcher.data.message) {
-        showToast(`Action API responded: ${pingFetcher.data.message}`, 'info');
-      }
     }
-  }, [pingFetcher.data, pingFetcher.state, showToast]);
+  }, [pingFetcher.data, pingFetcher.state]);
   
   // Function to test the me endpoint
   const testMeEndpoint = async () => {
@@ -263,7 +260,7 @@ export default function TestPage() {
                   {pingResponse && (
                     <div className="bg-success/10 border border-success/30 rounded-lg p-3">
                       <p className="text-sm font-medium">Response:</p>
-                      <code className="block mt-1 text-success-content bg-success/5 p-2 rounded">
+                      <code className="block mt-1 text-success-content bg-success/5 dark:bg-success p-2 rounded">
                         {pingResponse}
                       </code>
                     </div>
@@ -272,7 +269,7 @@ export default function TestPage() {
                   {pingError && (
                     <div className="bg-error/10 border border-error/30 rounded-lg p-3">
                       <p className="text-sm font-medium">Error:</p>
-                      <code className="block mt-1 text-error-content bg-error/5 p-2 rounded">
+                      <code className="block mt-1 text-error-content bg-error/5 dark:bg-error p-2 rounded">
                         {pingError}
                       </code>
                     </div>
@@ -305,7 +302,7 @@ export default function TestPage() {
                   {pingActionResponse && (
                     <div className="bg-info/10 border border-info/30 rounded-lg p-3">
                       <p className="text-sm font-medium">Response:</p>
-                      <pre className="block mt-1 text-info-content bg-info/5 p-2 rounded text-xs overflow-auto">
+                      <pre className="block mt-1 bg-info/3 p-2 rounded text-xs overflow-auto">
                         {pingActionResponse}
                       </pre>
                     </div>
@@ -337,12 +334,38 @@ export default function TestPage() {
                   
                   {tokenStatus && (
                     <div className={`
-                      ${tokenStatus === 'valid' ? 'bg-success/10 border-success/30' : 'bg-warning/10 border-warning/30'} 
+                      ${tokenStatus === 'valid' 
+                        ? 'bg-success/10 dark:bg-success/20 border-success/30 dark:border-success/40' 
+                        : 'bg-warning/10 dark:bg-warning/20 border-warning/30 dark:border-warning/40'} 
                       border rounded-lg p-3`}>
                       <p className="text-sm font-medium">Token Status:</p>
                       <div className="mt-1 flex items-center gap-2">
-                        <div className={`w-3 h-3 rounded-full ${tokenStatus === 'valid' ? 'bg-success' : 'bg-warning'}`}></div>
-                        <span className={tokenStatus === 'valid' ? 'text-success' : 'text-warning'}>
+                        {/* Status indicator dot */}
+                        <div className={clsx(
+                          "w-2.5 h-2.5 rounded-full relative",
+                          {
+                            "bg-success": tokenStatus === 'valid',
+                            "bg-warning": tokenStatus !== 'valid'
+                          }
+                        )}>
+                          {/* Animated ping effect */}
+                          <span className={clsx(
+                            "absolute inline-flex h-full w-full rounded-full opacity-75",
+                            {
+                              "animate-ping bg-success/50": tokenStatus === 'valid',
+                              "animate-ping bg-warning/50": tokenStatus !== 'valid'
+                            }
+                          )}></span>
+                        </div>
+                        
+                        {/* Status text */}
+                        <span className={clsx(
+                          "font-medium",
+                          {
+                            "text-success": tokenStatus === 'valid',
+                            "text-warning": tokenStatus !== 'valid'
+                          }
+                        )}>
                           {tokenStatus === 'valid' ? 'Valid' : tokenStatus === 'expired' ? 'Expired' : tokenStatus}
                         </span>
                       </div>

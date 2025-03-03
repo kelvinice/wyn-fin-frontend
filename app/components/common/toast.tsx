@@ -1,10 +1,11 @@
-import { Fragment, useEffect, useState } from "react";
+import { Fragment, useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { CheckCircleIcon, XCircleIcon, ExclamationCircleIcon, InformationCircleIcon, XMarkIcon } from "@heroicons/react/24/outline";
 
 export type ToastType = "success" | "error" | "warning" | "info";
 
 export interface ToastProps {
+  id: number;
   message: string;
   type?: ToastType;
   duration?: number;
@@ -13,6 +14,7 @@ export interface ToastProps {
 }
 
 export function Toast({ 
+  id,
   message, 
   type = "success", 
   duration = 3000, 
@@ -20,19 +22,47 @@ export function Toast({
   show 
 }: ToastProps) {
   const [isVisible, setIsVisible] = useState(show);
+  const [progress, setProgress] = useState(100);
+  
+  const timerRef = useRef<{interval: NodeJS.Timeout | null}>({ interval: null });
   
   useEffect(() => {
-    if (show && duration > 0) {
-      const timer = setTimeout(() => {
-        setIsVisible(false);
-        setTimeout(() => {
-          if (onClose) onClose();
-        }, 300); // Wait for exit animation to complete
-      }, duration);
-      
-      return () => clearTimeout(timer);
+    console.log(`Toast ${id} initialized with duration ${duration}ms`);
+    
+    if (timerRef.current.interval) {
+      clearInterval(timerRef.current.interval);
     }
-  }, [show, duration, onClose]);
+    
+    if (show && duration > 0) {
+      const startTime = Date.now();
+      const endTime = startTime + duration;
+      
+      timerRef.current.interval = setInterval(() => {
+        const now = Date.now();
+        const remaining = endTime - now;
+        const newProgress = Math.max(0, (remaining / duration) * 100);
+        
+        setProgress(newProgress);
+        
+        if (now >= endTime) {
+          if (timerRef.current.interval) {
+            clearInterval(timerRef.current.interval);
+            timerRef.current.interval = null;
+          }
+          setIsVisible(false);
+          setTimeout(() => {
+            if (onClose) onClose();
+          }, 300);
+        }
+      }, 16);
+    }
+    
+    return () => {
+      if (timerRef.current.interval) {
+        clearInterval(timerRef.current.interval);
+      }
+    };
+  }, [id]);
   
   const getIcon = () => {
     switch (type) {
@@ -60,6 +90,19 @@ export function Toast({
     }
   };
   
+  const getProgressColor = () => {
+    switch (type) {
+      case "success":
+        return "bg-success";
+      case "error":
+        return "bg-error";
+      case "warning":
+        return "bg-warning";
+      case "info":
+        return "bg-info";
+    }
+  };
+  
   return (
     <motion.div
       className="pointer-events-auto w-full max-w-sm"
@@ -69,7 +112,7 @@ export function Toast({
       transition={{ duration: 0.3 }}
       layout
     >
-      <div className={`alert shadow-lg ${getBgColor()} border w-full flex backdrop-blur-md`}>
+      <div className={`alert shadow-lg ${getBgColor()} border w-full flex backdrop-blur-md relative overflow-hidden`}>
         <div className="flex items-start gap-3 w-full pr-2">
           <div className="pt-0.5">{getIcon()}</div>
           <span className="text-sm line-clamp-3 text-pretty">{message}</span>
@@ -85,6 +128,16 @@ export function Toast({
         >
           <XMarkIcon className="w-4 h-4" />
         </button>
+        
+        {duration > 0 && (
+          <div 
+            className={`absolute bottom-0 left-0 h-0.5 ${getProgressColor()} opacity-80 dark:opacity-60`}
+            style={{ 
+              width: `${progress}%`,
+              transition: "width 100ms linear"
+            }}
+          />
+        )}
       </div>
     </motion.div>
   );

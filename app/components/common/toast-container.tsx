@@ -9,11 +9,12 @@ interface ToastContainerProps {
 
 export function ToastContainer({ toasts, removeToast }: ToastContainerProps) {
   return (
-    <div className="toast-container toast-end z-50 fixed bottom-4 right-4 flex flex-col gap-2 items-end max-h-screen overflow-hidden pointer-events-none">
+    <div className="toast-container toast-end z-50 fixed bottom-4 right-4 flex flex-col gap-2 items-end max-h-screen overflow-hidden">
       <AnimatePresence>
         {toasts.map((toast) => (
           <Toast
             key={toast.id}
+            id={toast.id}
             message={toast.message}
             type={toast.type}
             duration={toast.duration}
