@@ -1,9 +1,8 @@
-import React, { createContext, useContext, useState } from 'react';
-import { ToastContainer } from './toast-container';
-import type { ToastType } from './toast';
+import { createContext, useState, useContext } from "react";
+import { ToastContainer } from "./toast-container";
+import type { ToastType } from "./toast";
 
-// Unique ID generator for toasts
-let toastIdCounter = 0;
+let toastIdCounter = 1;
 
 export interface ToastItem {
   id: number;
@@ -16,10 +15,13 @@ interface ToastContextProps {
   showToast: (message: string, type?: ToastType, duration?: number) => void;
 }
 
-const ToastContext = createContext<ToastContextProps | undefined>(undefined);
+const ToastContext = createContext<ToastContextProps | null>(null);
 
 export function ToastProvider({ children }: { children: React.ReactNode }) {
   const [toasts, setToasts] = useState<ToastItem[]>([]);
+
+  // Maximum number of toasts to show at once
+  const MAX_TOASTS = 3;
 
   const showToast = (message: string, type: ToastType = 'success', duration: number = 3000) => {
     const newToast: ToastItem = {
@@ -29,7 +31,15 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
       duration,
     };
     
-    setToasts(prev => [...prev, newToast]);
+    // Add new toast and limit the total number displayed
+    setToasts(prev => {
+      const updatedToasts = [...prev, newToast];
+      // If we have more toasts than the limit, remove the oldest ones
+      if (updatedToasts.length > MAX_TOASTS) {
+        return updatedToasts.slice(-MAX_TOASTS);
+      }
+      return updatedToasts;
+    });
   };
 
   const removeToast = (id: number) => {

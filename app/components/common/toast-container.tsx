@@ -12,15 +12,16 @@ export function ToastContainer({ toasts, removeToast }: ToastContainerProps) {
     <div className="toast-container toast-end z-50 fixed bottom-4 right-4 flex flex-col gap-2 items-end max-h-screen overflow-hidden">
       <AnimatePresence>
         {toasts.map((toast) => (
-          <Toast
-            key={toast.id}
-            id={toast.id}
-            message={toast.message}
-            type={toast.type}
-            duration={toast.duration}
-            onClose={() => removeToast(toast.id)}
-            show={true}
-          />
+          <div key={toast.id} className="w-auto">
+            <Toast
+              id={toast.id}
+              message={toast.message}
+              type={toast.type}
+              duration={toast.duration}
+              onClose={() => removeToast(toast.id)}
+              show={true}
+            />
+          </div>
         ))}
       </AnimatePresence>
     </div>

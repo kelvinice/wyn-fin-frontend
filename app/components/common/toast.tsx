@@ -152,6 +152,13 @@ export function Toast({
                 transition: `width ${duration}ms linear`,
                 transformOrigin: 'left'
               }}
+              onTransitionEnd={() => {
+                // Once the progress bar animation completes, start the close sequence
+                setIsVisible(false);
+                setTimeout(() => {
+                  if (onClose) onClose();
+                }, 300);
+              }}
             />
           </div>
         )}

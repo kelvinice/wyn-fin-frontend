@@ -2,7 +2,7 @@ import { UserIcon, EnvelopeIcon } from "@heroicons/react/24/outline";
 
 interface EmailInputProps {
   value: string;
-  onChange: (value: string) => void;
+  onChange?: (value: string) => void;
   placeholder?: string;
   required?: boolean;
   label?: string;
@@ -38,7 +38,9 @@ export function EmailInput({
                     focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/30
                     transition-all duration-200 ${readOnly ? 'bg-base-200/50' : ''}`}
           value={value}
-          onChange={(e) => onChange(e.target.value)}
+          onChange={(e) => {
+            if (onChange) onChange(e.target.value);
+          }}
           required={required}
           readOnly={readOnly}
           disabled={disabled}
