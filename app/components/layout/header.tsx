@@ -1,10 +1,16 @@
 import { Link } from "react-router";
 import { useEffect, useState, useRef } from "react";
-import { ArrowLeftIcon } from "@heroicons/react/24/outline";
+import { 
+  ArrowLeftIcon, 
+  ArrowRightOnRectangleIcon, 
+  UserIcon, 
+  RectangleGroupIcon 
+} from "@heroicons/react/24/outline";
 import { motion } from "framer-motion";
 import { Logo } from "~/components/common/logo";
 import { ThemeSwitcher } from "~/components/common/theme-switcher";
-import { useIsAuthenticated } from "~/components/auth/components/auth-provider";
+import { useIsAuthenticated, useSignOut } from "~/components/auth/components/auth-provider";
+import { useToast } from "~/components/common/toast-context";
 
 interface HeaderProps {
   homePage?: boolean;
@@ -12,6 +18,8 @@ interface HeaderProps {
 
 export function Header({ homePage = false }: HeaderProps) {
   const isAuthenticated = useIsAuthenticated();
+  const signOut = useSignOut();
+  const { showToast } = useToast();
   const [hasScrolled, setHasScrolled] = useState(false);
   
   // Use classic scroll listener for class toggling
@@ -30,9 +38,13 @@ export function Header({ homePage = false }: HeaderProps) {
   // Determine text color class based on scroll state
   const textColorClass = hasScrolled ? 'text-base-content' : 'text-primary-content';
   
+  const handleSignOut = () => {
+    signOut();
+    showToast("You have been signed out successfully", "info");
+  };
+  
   return (
     <header className="sticky top-0 w-full z-50">
-      {/* Background with backdrop blur */}
       <div 
         className={`
           absolute inset-0 backdrop-blur-xl transition-all duration-300
@@ -58,39 +70,46 @@ export function Header({ homePage = false }: HeaderProps) {
                 </span>
               </>
             ) : (
-              <Link 
-                to="/" 
-                className={`btn btn-sm btn-outline flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all duration-300 
-                  ${textColorClass} 
-                  hover:bg-base-200/60 hover:text-primary group
-                `}
-              >
+              <Link to="/" className="absolute top-4 left-4 z-50 btn btn-sm gap-2 group hover:text-primary">
                 <ArrowLeftIcon className="w-4 h-4 group-hover:transform group-hover:-translate-x-0.5" />
-                <span className="font-sm">Back to Home</span>
+                Back to Home
               </Link>
             )}
           </motion.div>
           
           <motion.div 
-            className="flex items-center gap-4"
+            className="flex items-center gap-3"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.4, delay: 0.2 }}
           >
             <ThemeSwitcher />
+            
             {isAuthenticated ? (
-              <Link 
-                to="/dashboard" 
-                className="btn btn-sm btn-accent shadow-sm hover:shadow-md transition-all duration-300"
-              >
-                Dashboard
-              </Link>
+              <div className="flex gap-2">
+                <Link 
+                  to="/dashboard" 
+                  className="btn btn-sm btn-accent transition-all duration-300 gap-2"
+                >
+                  <RectangleGroupIcon className="w-4 h-4" />
+                  <span className="hidden sm:inline">Dashboard</span>
+                </Link>
+                
+                <button 
+                  onClick={handleSignOut}
+                  className="btn btn-sm btn-error gap-2 transition-all duration-300"
+                >
+                  <ArrowRightOnRectangleIcon className="w-4 h-4" />
+                  <span className="hidden sm:inline">Sign Out</span>
+                </button>
+              </div>
             ) : (
               <Link 
                 to="/auth/login" 
-                className={`btn btn-sm ${!hasScrolled ? 'btn-outline text-primary-content' : 'btn-outline'} transition-all duration-300`}
+                className="btn btn-sm gap-2 hover:bg-base-200/60 hover:text-primary transition-all duration-300"
               >
-                Sign In
+                <UserIcon className="w-4 h-4" />
+                <span>Sign In</span>
               </Link>
             )}
           </motion.div>

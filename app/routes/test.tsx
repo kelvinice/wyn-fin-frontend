@@ -12,21 +12,6 @@ import { ApiActionTester, ApiTester } from "~/components/testing/api-tester";
 import { AuthTester } from "~/components/testing/auth-tester";
 import { BaseColorsTester, ColorPaletteTester } from "~/components/testing/color-palette-tester";
 
-// import {
-//   TestSection,
-//   TestCard,
-//   ToastTester,
-//   LoadingButtonsTester,
-//   TiltTester,
-//   ThemeSwitcherTester,
-//   ApiTester,
-//   ApiActionTester,
-//   AuthTester,
-//   ColorPaletteTester,
-//   BaseColorsTester,
-//   ModalTester
-// } from "~/components/testing";
-
 export function meta({}: Route.MetaArgs) {
   return [
     { title: "UI Component Testing | WynFin" },
@@ -36,20 +21,8 @@ export function meta({}: Route.MetaArgs) {
 
 export default function TestPage() {
   return (
-    <div className="min-h-screen bg-base-100">
+    <div className="min-h-screen bg-base-100 mt-[40px]">
       {/* Header with navigation and theme switcher */}
-      <header className="bg-base-200 shadow-sm">
-        <div className="container mx-auto px-6 py-4 flex justify-between items-center">
-          <div className="flex items-center gap-4">
-            <Link to="/" className="btn btn-sm btn-outline">
-              ← Back to home
-            </Link>
-            <h1 className="text-xl font-bold hidden md:block">UI Component Testing</h1>
-          </div>
-          <ThemeSwitcher />
-        </div>
-      </header>
-      
       <div className="container mx-auto px-6 py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2 md:hidden">UI Component Testing</h1>
@@ -109,12 +82,6 @@ export default function TestPage() {
             </TestCard>
           </TestSection>
         </div>
-        
-        {/* Footer */}
-        <footer className="mt-12 pt-6 border-t border-base-300 text-center text-sm text-gray-500 dark:text-gray-400">
-          <p>WynFin UI Component Testing Page</p>
-          <p className="mt-1">Use this page to test UI components in isolation</p>
-        </footer>
       </div>
     </div>
   );

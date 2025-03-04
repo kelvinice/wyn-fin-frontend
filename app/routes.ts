@@ -6,13 +6,13 @@ export default [
     // Homepage as index route
     index("routes/home.tsx"),
     route("about", "routes/about.tsx"),
+    route("test", "routes/test.tsx"),
   ]),
   
   // Auth routes with shared layout
   layout("routes/auth/layout.tsx", [
     route("auth/login", "routes/auth/login.tsx"),
     route("auth/register", "routes/auth/register.tsx"),
-    route("test", "routes/test.tsx"),
   ]),
   
   // Dashboard and profile section

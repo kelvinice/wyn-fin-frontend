@@ -21,8 +21,8 @@ export default function AuthLayoutPage() {
   
   return (
     <div className="relative">
-      <Link to="/" className="absolute top-4 left-4 z-50 btn btn-sm gap-2">
-        <ArrowLeftIcon className="w-4 h-4" />
+      <Link to="/" className="absolute top-4 left-4 z-50 btn btn-sm gap-2 group hover:text-primary">
+        <ArrowLeftIcon className="w-4 h-4 group-hover:transform group-hover:-translate-x-0.5" />
         Back to Home
       </Link>
       

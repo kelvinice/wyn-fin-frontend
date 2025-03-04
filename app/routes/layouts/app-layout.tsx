@@ -264,10 +264,10 @@ export default function AppLayout() {
           
           <div className="p-4 border-t border-base-300 bg-base-200/80 backdrop-blur-sm sticky bottom-0">
             <button 
-              className="flex items-center btn w-full gap-3 px-4 py-2.5 rounded-lg text-error hover:bg-error/10 transition-colors"
+              className="flex items-center btn w-full gap-3 btn-error transition-colors"
               onClick={handleSignOut}
             >
-              <ArrowRightOnRectangleIcon className="w-5 h-5" />
+              <ArrowRightOnRectangleIcon className="w-4 h-4" />
               <span className="font-medium">Sign Out</span>
             </button>
           </div>
