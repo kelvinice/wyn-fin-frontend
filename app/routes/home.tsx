@@ -4,7 +4,7 @@ import type { Route } from "./+types/home";
 import { FancyCard } from "~/components/common/cards/fancy-card";
 import { Logo } from "~/components/common/logo";
 import { useIsAuthenticated } from "~/components/auth/components/auth-provider";
-import { ThemeSwitcher } from "~/components/common/theme-switcher";
+import { PublicLayout } from "~/components/layout/public-layout";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -41,31 +41,7 @@ export default function Home() {
   ];
   
   return (
-    <div className="min-h-screen bg-base-100">
-      {/* Header with theme switcher */}
-      <header className="absolute top-0 w-full z-20 py-4">
-        <div className="container mx-auto px-6">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center space-x-2">
-              <Logo className="w-8 h-8" />
-              <span className="font-bold text-xl text-primary-content md:text-base-content">WynFin</span>
-            </div>
-            <div className="flex items-center gap-4">
-              <ThemeSwitcher />
-              {isAuthenticated ? (
-                <Link to="/dashboard" className="btn btn-sm btn-accent">
-                  Dashboard
-                </Link>
-              ) : (
-                <Link to="/auth/login" className="btn btn-sm btn-outline btn border-primary-content/30 text-primary-content hover:border-primary-content/50 hover:bg-primary-content/10 md:text-base-content md:border-base-content/30 md:hover:border-base-content/50 md:hover:text-primary">
-                  Sign In
-                </Link>
-              )}
-            </div>
-          </div>
-        </div>
-      </header>
-      
+    <>
       {/* Hero Section */}
       <section className="relative bg-gradient-to-br from-primary to-primary-focus text-primary-content overflow-hidden">
         {/* Background decoration */}
@@ -241,43 +217,6 @@ export default function Home() {
           </motion.div>
         </div>
       </section>
-      
-      {/* Footer */}
-      <footer className="bg-base-300 py-12">
-        <div className="container mx-auto px-6">
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <div className="mb-6 md:mb-0">
-              <div className="flex items-center">
-                <Logo className="w-10 h-10 mr-3" />
-                <span className="text-xl font-bold">WynFin</span>
-              </div>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
-                © {new Date().getFullYear()} WynFin. All rights reserved.
-              </p>
-            </div>
-            
-            <div className="flex gap-8">
-              <div>
-                <h3 className="font-semibold mb-2">Product</h3>
-                <ul className="text-sm space-y-1">
-                  <li><Link to="/features" className="hover:text-primary">Features</Link></li>
-                  <li><Link to="/pricing" className="hover:text-primary">Pricing</Link></li>
-                  <li><Link to="/test" className="hover:text-primary">Test Page</Link></li>
-                </ul>
-              </div>
-              
-              <div>
-                <h3 className="font-semibold mb-2">Company</h3>
-                <ul className="text-sm space-y-1">
-                  <li><Link to="/about" className="hover:text-primary">About Us</Link></li>
-                  <li><Link to="/contact" className="hover:text-primary">Contact</Link></li>
-                  <li><Link to="/privacy" className="hover:text-primary">Privacy</Link></li>
-                </ul>
-              </div>
-            </div>
-          </div>
-        </div>
-      </footer>
-    </div>
+    </>
   );
 }

@@ -1,13 +1,14 @@
-import { motion } from "framer-motion";
 import { Link } from "react-router";
+import { motion } from "framer-motion";
 import { FancyCard } from "~/components/common/cards/fancy-card";
 import { Logo } from "~/components/common/logo";
+import { PublicLayout } from "~/components/layout/public-layout";
 import type { Route } from "./+types/home";
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: "About Us | WinFin" },
-    { name: "description", content: "Learn more about the WinFin team and our mission to transform personal finance management." },
+    { title: "About Us | WynFin" },
+    { name: "description", content: "Learn about WynFin's mission and team" },
   ];
 }
 
@@ -28,13 +29,10 @@ export default function AboutPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-base-100">
+    <>
       {/* Header */}
-      <header className="bg-gradient-to-r from-primary to-primary-focus text-primary-content py-16">
+      <header className="bg-gradient-to-r from-primary to-primary-focus text-primary-content py-16 pt-32">
         <div className="container mx-auto px-6 relative">
-          <Link to="/" className="absolute top-[-40px] left-6 btn btn-sm btn-ghost gap-2 text-primary-content">
-            ← Back to Home
-          </Link>
           <div className="text-center">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -206,6 +204,6 @@ export default function AboutPage() {
           </p>
         </div>
       </footer>
-    </div>
+    </>
   );
 }

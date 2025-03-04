@@ -1,15 +1,18 @@
 import { type RouteConfig, index, route, layout, prefix } from "@react-router/dev/routes";
 
 export default [
-  // Homepage as index route
-  index("routes/home.tsx"),
-
-  route("about", "routes/about.tsx"),
+  // Public routes with shared layout
+  layout("routes/layouts/public-root-layout.tsx", [
+    // Homepage as index route
+    index("routes/home.tsx"),
+    route("about", "routes/about.tsx"),
+  ]),
   
   // Auth routes with shared layout
   layout("routes/auth/layout.tsx", [
     route("auth/login", "routes/auth/login.tsx"),
     route("auth/register", "routes/auth/register.tsx"),
+    route("test", "routes/test.tsx"),
   ]),
   
   // Dashboard and profile section
@@ -50,7 +53,7 @@ export default [
     ]),
   ]),
   
-  // Standalone routes
-  route("test", "routes/test.tsx"),
+  
+  
   route("*", "routes/not-found.tsx"),
 ] satisfies RouteConfig;

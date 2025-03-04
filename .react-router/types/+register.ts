@@ -11,6 +11,7 @@ type Params = {
   "/about": {};
   "/auth/login": {};
   "/auth/register": {};
+  "/test": {};
   "/dashboard": {};
   "/profile": {};
   "/settings": {};
@@ -21,7 +22,6 @@ type Params = {
   "/api/set-theme": {};
   "/api/auth/set-session": {};
   "/api/auth/clear-session": {};
-  "/test": {};
   "/*": {
     "*": string;
   };
