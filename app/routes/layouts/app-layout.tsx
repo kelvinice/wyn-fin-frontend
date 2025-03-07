@@ -261,16 +261,6 @@ export default function AppLayout() {
               )
             )}
           </nav>
-          
-          <div className="p-4 border-t border-base-300 bg-base-200/80 backdrop-blur-sm sticky bottom-0">
-            <button 
-              className="flex items-center btn w-full gap-3 btn-error transition-colors"
-              onClick={handleSignOut}
-            >
-              <ArrowRightOnRectangleIcon className="w-4 h-4" />
-              <span className="font-medium">Sign Out</span>
-            </button>
-          </div>
         </aside>
         
         <div className="flex-1 flex flex-col">
@@ -404,15 +394,6 @@ export default function AppLayout() {
                     <li><button onClick={handleSignOut}>Sign Out</button></li>
                   </ul>
                 </div>
-                
-                {/* Sign out button - desktop */}
-                <LoadingButton 
-                  isLoading={false} 
-                  className="btn btn-sm btn-outline border-primary-content/30 text-primary-content hover:bg-primary-content/20 hover:border-primary-content hidden md:flex"
-                  onClick={handleSignOut}
-                >
-                  Sign Out
-                </LoadingButton>
               </div>
             </div>
           </header>
