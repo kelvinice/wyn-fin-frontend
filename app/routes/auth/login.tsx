@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate, Link } from "react-router";
+import { useNavigate, Link, redirect } from "react-router";
 import type { Route } from "../+types/home";
 import type { SignInFormData } from "~/components/auth/core/models";
 import { useLogin } from "~/components/auth/components/hooks/useLogin";
@@ -7,6 +7,16 @@ import { EmailInput } from "~/components/auth/components/email-input";
 import { PasswordInput } from "~/components/auth/components/password-input";
 import { LoadingButton } from "~/components/auth/components/loading-button";
 import { ErrorAlert } from "~/components/auth/components/error-alert";
+import { authTokenCookie } from "~/cookies.server";
+
+export async function loader({ request }: { request: Request }) {
+  const cookieHeader = request.headers.get("Cookie");
+  const token = await authTokenCookie.parse(cookieHeader);
+  if (token) {
+    return redirect("/dashboard");
+  }
+  return null;
+}
 
 export function meta({}: Route.MetaArgs) {
   return [

@@ -7,7 +7,7 @@ type AuthContextType = {
   user: User | null;
   token: string | null;
   isAuthenticated: boolean;
-  signIn: (token: string, user: User, expiresIn: number) => void;
+  signIn: (token: string, user: User, expiresIn: number) => Promise<void>; // Update the signIn type
   signOut: () => void;
   getAuthToken: () => string | null; // Add this new method
 };
@@ -17,7 +17,7 @@ const AuthContext = createContext<AuthContextType>({
   user: null,
   token: null,
   isAuthenticated: false,
-  signIn: () => {},
+  signIn: () => Promise.resolve(), // Update the default signIn
   signOut: () => {},
   getAuthToken: () => null,
 });
@@ -94,7 +94,7 @@ export const AuthProvider = ({
   }, [initialAuthState.isAuthenticated]);
 
   // Sign in function
-  const signIn = (authToken: string, userData: User, expiresIn: number) => {
+  const signIn = (authToken: string, userData: User, expiresIn: number): Promise<void> => {
     setToken(authToken);
     setUser(userData);
     
@@ -108,15 +108,33 @@ export const AuthProvider = ({
       storage.set('auth_expires', expirationTime.toString());
     }
     
-    // Store auth data in cookies via server action
+    // Store auth data in cookies via server action and return the promise
     const formData = new FormData();
     formData.append('token', authToken);
     formData.append('userData', JSON.stringify(userData));
     formData.append('expiresIn', expiresIn.toString());
     
-    fetcher.submit(formData, {
-      method: 'post',
-      action: '/api/auth/set-session'
+    return new Promise((resolve, reject) => {
+      fetcher.submit(formData, {
+        method: 'post',
+        action: '/api/auth/set-session'
+      });
+      
+      const checkFetcher = () => {
+        if (fetcher.state === 'idle') {
+          if (fetcher.data?.success) {
+            resolve();
+          } else if (fetcher.data?.success === false) {
+            reject(new Error(fetcher.data.message || 'Failed to set session'));
+          } else {
+            setTimeout(checkFetcher, 50); // Check again in a bit
+          }
+        } else {
+          setTimeout(checkFetcher, 50); // Not done yet, check again
+        }
+      };
+      
+      checkFetcher();
     });
   };
   
