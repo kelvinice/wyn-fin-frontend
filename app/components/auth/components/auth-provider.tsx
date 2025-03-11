@@ -163,6 +163,22 @@ export const AuthProvider = ({
     return () => clearInterval(interval);
   }, [token]);
   
+  // Listen for token expiration events
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
+    const handleTokenExpired = () => {
+      console.log('Token expired event received');
+      signOut();
+    };
+    
+    window.addEventListener('auth:token-expired', handleTokenExpired);
+    
+    return () => {
+      window.removeEventListener('auth:token-expired', handleTokenExpired);
+    };
+  }, []);
+
   const isAuthenticated = !!token && !!user;
 
   const getAuthToken = () => {
