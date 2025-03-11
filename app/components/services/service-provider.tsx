@@ -34,7 +34,6 @@ export function ServiceProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
-// Hook for consuming components to get the service factory
 export function useServiceFactory() {
   const context = useContext(ServiceFactoryContext);
   if (!context) {
@@ -43,7 +42,6 @@ export function useServiceFactory() {
   return context;
 }
 
-// Typed service hooks - automatically inject the token
 export function useService<T extends BaseService>(
   ServiceClass: new (token?: string | null) => T
 ): T {
