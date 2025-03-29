@@ -9,10 +9,10 @@ export function Footer() {
           <div className="mb-6 md:mb-0">
             <div className="flex items-center">
               <Logo className="w-10 h-10 mr-3" />
-              <span className="text-xl font-bold">WynFin</span>
+              <span className="text-xl font-bold">WinFin</span>
             </div>
             <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
-              © {new Date().getFullYear()} WynFin. All rights reserved.
+              © {new Date().getFullYear()} WinFin. All rights reserved.
             </p>
           </div>
           

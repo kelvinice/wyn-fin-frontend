@@ -15,7 +15,7 @@ export default function AuthLayoutPage() {
   if (isRegisterPage) {
     title = "Create New Account";
     subtitle = "Start your financial journey with us";
-    mobileTitleText = "Join WynFin";
+    mobileTitleText = "Join WinFin";
     mobileSubtitleText = "Create your account to continue";
   }
   

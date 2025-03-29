@@ -6,7 +6,7 @@ import type { Route } from "../+types/home";
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: "Spending | WynFin" },
+    { title: "Spending | WinFin" },
     { name: "description", content: "Track and manage your spending" },
   ];
 }

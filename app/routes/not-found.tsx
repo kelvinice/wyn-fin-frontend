@@ -4,7 +4,7 @@ import type { Route } from "./+types/home";
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: "Page Not Found | WynFin" },
+    { title: "Page Not Found | WinFin" },
     { name: "description", content: "The page you are looking for does not exist." },
   ];
 }

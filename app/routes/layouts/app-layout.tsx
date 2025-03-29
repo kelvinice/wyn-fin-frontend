@@ -187,7 +187,7 @@ export default function AppLayout() {
         <aside className="hidden md:flex flex-col bg-base-200 w-64 border-r border-base-300 shadow-sm">
           <div className="p-4 border-b border-base-300 bg-base-200/80 backdrop-blur-sm sticky top-0 z-20">
             <Link to="/" className="flex items-center gap-2 text-lg font-bold">
-              <span className="text-primary">WynFin</span>
+              <span className="text-primary">WinFin</span>
             </Link>
           </div>
           
@@ -278,7 +278,7 @@ export default function AppLayout() {
               </button>
               
               <div className="flex items-center">
-                <h1 className="text-2xl font-bold">WynFin</h1>
+                <h1 className="text-2xl font-bold">WinFin</h1>
                 <div className="hidden md:flex ml-8 items-center gap-1">
                   <span className="text-xs text-primary-content/70">
                     {location.pathname === '/dashboard' 
@@ -420,7 +420,7 @@ export default function AppLayout() {
                 >
                   <div className="p-4 border-b border-base-300 flex justify-between items-center">
                     <Link to="/" className="flex items-center gap-2 text-lg font-bold" onClick={() => setMobileNavOpen(false)}>
-                      <span className="text-primary">WynFin</span>
+                      <span className="text-primary">WinFin</span>
                     </Link>
                     <button className="btn btn-ghost btn-sm" onClick={() => setMobileNavOpen(false)}>
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">

@@ -66,7 +66,7 @@ export function Header({ homePage = false }: HeaderProps) {
                   <Logo className="w-8 h-8" />
                 </div>
                 <span className={`font-bold text-xl transition-colors duration-300 ${textColorClass}`}>
-                  WynFin
+                WinFin
                 </span>
               </>
             ) : (

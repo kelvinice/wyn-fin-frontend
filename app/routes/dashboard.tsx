@@ -11,8 +11,8 @@ import { RecentActivityCard } from "~/components/dashboard/recent-activity-card"
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: "Dashboard | WynFin" },
-    { name: "description", content: "WynFin Dashboard - Manage your finances" },
+    { title: "Dashboard | WinFin" },
+    { name: "description", content: "WinFin Dashboard - Manage your finances" },
   ];
 }
 

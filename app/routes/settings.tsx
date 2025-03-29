@@ -15,8 +15,8 @@ import { DeleteAccountModal } from "~/components/settings/delete-account-modal";
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: "Settings | WynFin" },
-    { name: "description", content: "Manage your WynFin account settings" },
+    { title: "Settings | WinFin" },
+    { name: "description", content: "Manage your WinFin account settings" },
   ];
 }
 

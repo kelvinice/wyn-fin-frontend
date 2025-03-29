@@ -59,7 +59,7 @@ export function AuthLayout({
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5, duration: 0.5 }}
           >
-            WynFin
+            WinFin
           </motion.h1>
           <motion.p
             className="mt-4 text-lg opacity-90 text-center"

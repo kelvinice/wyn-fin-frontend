@@ -4,12 +4,11 @@ import type { Route } from "./+types/home";
 import { FancyCard } from "~/components/common/cards/fancy-card";
 import { Logo } from "~/components/common/logo";
 import { useIsAuthenticated } from "~/components/auth/components/auth-provider";
-import { PublicLayout } from "~/components/layout/public-layout";
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: "WynFin - Modern Financial Management" },
-    { name: "description", content: "Take control of your finances with WynFin's powerful budgeting, tracking, and reporting tools." },
+    { title: "WinFin - Modern Financial Management" },
+    { name: "description", content: "Take control of your finances with WinFin's powerful budgeting, tracking, and reporting tools." },
   ];
 }
 
@@ -42,9 +41,7 @@ export default function Home() {
   
   return (
     <>
-      {/* Hero Section */}
       <section className="relative bg-gradient-to-br from-primary to-primary-focus text-primary-content overflow-hidden">
-        {/* Background decoration */}
         <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0">
           <div className="absolute top-[-10%] right-[-5%] w-[40%] h-[40%] rounded-full bg-white/10 blur-3xl" />
           <div className="absolute bottom-[-10%] left-[-10%] w-[60%] h-[60%] rounded-full bg-primary-focus/50 blur-3xl" />
@@ -62,7 +59,7 @@ export default function Home() {
                 Take Control of Your Finances
               </h1>
               <p className="text-xl mb-8 opacity-90">
-                WynFin helps you track, manage, and optimize your financial life with powerful yet intuitive tools.
+                WinFin helps you track, manage, and optimize your financial life with powerful yet intuitive tools.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 {isAuthenticated ? (
@@ -94,7 +91,7 @@ export default function Home() {
                     <div className="p-6">
                       <Logo className="w-32 h-32 mx-auto" />
                     </div>
-                    <h2 className="text-2xl font-bold text-base-content">WynFin Dashboard</h2>
+                    <h2 className="text-2xl font-bold text-base-content">WinFin Dashboard</h2>
                     <p className="text-gray-600 dark:text-gray-400 mt-2">Preview version 1.0</p>
                     <div className="mt-6 grid grid-cols-2 gap-3 p-4">
                       <div className="h-3 bg-primary/20 rounded w-full"></div>
@@ -111,8 +108,7 @@ export default function Home() {
         
         <div className="absolute bottom-0 w-full h-16 bg-base-100" style={{ clipPath: "polygon(0 100%, 100% 100%, 100% 0, 0 100%)" }}></div>
       </section>
-      
-      {/* Features Section */}
+
       <section className="py-16 bg-base-100">
         <div className="container mx-auto px-6">
           <motion.div 
@@ -124,7 +120,7 @@ export default function Home() {
           >
             <h2 className="text-3xl md:text-4xl font-bold">Powerful Financial Tools</h2>
             <p className="text-gray-600 dark:text-gray-400 mt-4 max-w-2xl mx-auto">
-              WynFin provides everything you need to manage your money effectively and build a secure financial future.
+              WinFin provides everything you need to manage your money effectively and build a secure financial future.
             </p>
           </motion.div>
           
@@ -174,7 +170,7 @@ export default function Home() {
                   <span className="text-2xl">👤</span>
                 </div>
                 <p className="italic text-lg mb-6">
-                  "WynFin completely changed how I manage my finances. The insights and budgeting tools helped me save for my first home purchase!"
+                  "WinFin completely changed how I manage my finances. The insights and budgeting tools helped me save for my first home purchase!"
                 </p>
                 <p className="font-medium">Kelvin</p>
                 <p className="text-sm text-gray-500">Software Developer</p>
@@ -196,7 +192,7 @@ export default function Home() {
           >
             <h2 className="text-3xl md:text-4xl font-bold mb-6">Ready to Transform Your Finances?</h2>
             <p className="text-xl mb-8 opacity-90">
-              Join thousands of users who have improved their financial well-being with WynFin.
+              Join thousands of users who have improved their financial well-being with WinFin.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               {isAuthenticated ? (

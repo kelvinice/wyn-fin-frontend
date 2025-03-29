@@ -13,8 +13,8 @@ import { ArrowLeftIcon } from "@heroicons/react/24/outline";
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: "Profile | WynFin" },
-    { name: "description", content: "Manage your WynFin user profile" },
+    { title: "Profile | WinFin" },
+    { name: "description", content: "Manage your WinFin user profile" },
   ];
 }
 

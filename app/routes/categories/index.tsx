@@ -7,7 +7,7 @@ import type { Route } from "../+types/home";
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: "Categories | WynFin" },
+    { title: "Categories | WinFin" },
     { name: "description", content: "Manage your spending and budget categories" },
   ];
 }

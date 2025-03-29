@@ -10,8 +10,8 @@ import { ErrorAlert } from "~/components/auth/components/error-alert";
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: "Login | WynFin" },
-    { name: "description", content: "Login to access your WynFin account" },
+    { title: "Login | WinFin" },
+    { name: "description", content: "Login to access your WinFin account" },
   ];
 }
 

@@ -14,8 +14,8 @@ import type { Route } from "../+types/home";
 
 export function meta({ }: Route.MetaArgs) {
   return [
-    { title: "Register | WynFin" },
-    { name: "description", content: "Create a new WynFin account" },
+    { title: "Register | WinFin" },
+    { name: "description", content: "Create a new WinFin account" },
   ];
 }
 

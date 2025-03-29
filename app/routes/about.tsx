@@ -7,8 +7,8 @@ import type { Route } from "./+types/home";
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: "About Us | WynFin" },
-    { name: "description", content: "Learn about WynFin's mission and team" },
+    { title: "About Us | WinFin" },
+    { name: "description", content: "Learn about WinFin's mission and team" },
   ];
 }
 

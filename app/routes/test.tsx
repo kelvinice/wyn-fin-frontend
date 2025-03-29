@@ -14,7 +14,7 @@ import { BaseColorsTester, ColorPaletteTester } from "~/components/testing/color
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: "UI Component Testing | WynFin" },
+    { title: "UI Component Testing | WinFin" },
     { name: "description", content: "Test page for UI components" },
   ];
 }
@@ -22,7 +22,6 @@ export function meta({}: Route.MetaArgs) {
 export default function TestPage() {
   return (
     <div className="min-h-screen bg-base-100 mt-[40px]">
-      {/* Header with navigation and theme switcher */}
       <div className="container mx-auto px-6 py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2 md:hidden">UI Component Testing</h1>
