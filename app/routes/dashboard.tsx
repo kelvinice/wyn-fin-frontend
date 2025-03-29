@@ -8,6 +8,9 @@ import { WelcomeCard } from "~/components/dashboard/welcome-card";
 import { ProfileCard } from "~/components/dashboard/profile-card";
 import { QuickActionsCard } from "~/components/dashboard/quick-actions-card";
 import { RecentActivityCard } from "~/components/dashboard/recent-activity-card";
+import { createProtectedLoader } from "~/utils/auth-utils";
+
+export const loader = createProtectedLoader();
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -23,7 +26,7 @@ export default function DashboardPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [profileData, setProfileData] = useState<User | null>(null);
   
-  // Get the authenticated users service
+  // Get the authenticated users service with automatic token injection
   const usersService = useUsersService();
   
   // Fetch user profile data when authenticated

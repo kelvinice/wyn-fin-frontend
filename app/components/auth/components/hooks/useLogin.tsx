@@ -12,8 +12,8 @@ export function useLogin() {
     mutationFn: async (data: SignInFormData): Promise<AuthResponse> => {
       const response = await authService.login(data);
       
-      // Save auth data using our custom hook
-      signIn({
+      // Await the asynchronous signIn so cookies are set before moving on
+      await signIn({
         token: response.token,
         user: response.user,
         expiresIn: response.expiresIn

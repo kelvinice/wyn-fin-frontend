@@ -2,6 +2,8 @@ import { useAuthToken } from '~/components/auth/components/auth-provider';
 import BaseService from '~/services/base-service';
 import UsersService from '~/services/users-service';
 import AuthService from '~/services/auth-service';
+import TestService from '~/services/test-service';
+import { useService } from '~/components/services/service-provider';
 
 // Generic function to create an authenticated service
 export function useAuthenticatedService<T extends BaseService>(
@@ -20,13 +22,17 @@ export function useAuthenticatedService<T extends BaseService>(
   return service;
 }
 
-// Specific hooks for each service type
-export function useUsersService() {
-  return useAuthenticatedService(UsersService);
-}
-
+// Typed hooks for specific services
 export function useAuthService() {
-  return useAuthenticatedService(AuthService);
+  return useService(AuthService);
 }
 
-// Add more specific hooks as needed
+export function useUsersService() {
+  return useService(UsersService);
+}
+
+export function useTestService() {
+  return useService(TestService);
+}
+
+// Add more specific service hooks as needed

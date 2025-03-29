@@ -4,28 +4,35 @@ import { type AxiosInstance } from 'axios';
 export default class BaseService {
     protected _axios: AxiosInstance;
 
-    constructor() {
-        this._axios = axios.create({
+    constructor(token?: string | null) {
+        const config = {
             baseURL: import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000/api/',
             headers: {
                 'Content-Type': 'application/json',
             },
-            withCredentials: true, 
-        });
+            // withCredentials: true,
+        };
 
-        // Add request interceptor to include auth token from localStorage as fallback
-        this._axios.interceptors.request.use(
-            (config) => {
-                // The primary auth method is cookies (withCredentials: true)
-                // But we'll also include the token in the Authorization header as a fallback
-                // for APIs that may expect it there
-                const token = localStorage.getItem('auth_token');
-                if (token) {
-                    config.headers.Authorization = `Bearer ${token}`;
+        this._axios = axios.create(config);
+
+        // Set auth token in header if provided
+        if (token) {
+            this._axios.defaults.headers.common.Authorization = `Bearer ${token}`;
+        }
+        
+        // Add response interceptor to handle token expiration
+        this._axios.interceptors.response.use(
+            response => response,
+            error => {
+                if (error.response?.status === 401) {
+                    // Could trigger refresh token logic or redirect to login
+                    console.warn('Authentication token expired or invalid');
+                    
+                    // Optionally dispatch a global event for token expiration
+                    if (typeof window !== 'undefined') {
+                        window.dispatchEvent(new CustomEvent('auth:token-expired'));
+                    }
                 }
-                return config;
-            },
-            (error) => {
                 return Promise.reject(error);
             }
         );
@@ -33,11 +40,6 @@ export default class BaseService {
 
     // Static method to create pre-configured instance with token
     static createWithToken(token: string): BaseService {
-        const service = new BaseService();
-        
-        // Override Authorization header with the provided token
-        service._axios.defaults.headers.common.Authorization = `Bearer ${token}`;
-        
-        return service;
+        return new BaseService(token);
     }
 }

@@ -11,25 +11,29 @@ export default class TestService extends BaseService {
   }
 
   /**
-   * Get current user information
+   * Get current user information using either token in header or cookie
    * @returns Promise with the user data and token status
    */
-  getMe = async (): Promise<{user: any, tokenStatus: string}> => {
+  getMe = async (): Promise<{user: any, tokenStatus: string, authMethod: string}> => {
     try {
       const response = await this._axios.get("auth/me");
       
-      // The API returns the user object directly
+      // Detect authentication method
+      const authMethod = response.headers['x-auth-method'] || 
+                         (this._axios.defaults.headers.common.Authorization ? 'token' : 'cookie');
+      
       return {
         user: response.data,
-        // Assume token is valid if we got a successful response
-        tokenStatus: 'valid'
+        tokenStatus: 'valid',
+        authMethod
       };
     } catch (error: any) {
       // If we get a 401 status, the token is likely expired
       if (error.response?.status === 401) {
         return {
           user: null,
-          tokenStatus: 'expired'
+          tokenStatus: 'expired',
+          authMethod: 'none'
         };
       }
       

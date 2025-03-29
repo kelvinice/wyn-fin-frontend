@@ -2,7 +2,6 @@ import { Link } from "react-router";
 import { motion } from "framer-motion";
 import { FancyCard } from "~/components/common/cards/fancy-card";
 import { Logo } from "~/components/common/logo";
-import { PublicLayout } from "~/components/layout/public-layout";
 import type { Route } from "./+types/home";
 
 export function meta({}: Route.MetaArgs) {

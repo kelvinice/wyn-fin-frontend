@@ -2,7 +2,7 @@ import { useState } from "react";
 import clsx from "clsx";
 import { LoadingButton } from "~/components/auth/components/loading-button";
 import { useToast } from "~/components/common/toast-context";
-import TestService from "~/services/test-service";
+import { useTestService } from "~/hooks/use-service";
 
 export function AuthTester() {
   const { showToast } = useToast();
@@ -10,6 +10,9 @@ export function AuthTester() {
   const [userLoading, setUserLoading] = useState(false);
   const [userError, setUserError] = useState<string | null>(null);
   const [tokenStatus, setTokenStatus] = useState<string | null>(null);
+  
+  // Use the service hook instead of creating a new service with explicit token
+  const testService = useTestService();
   
   // Function to test the me endpoint
   const testMeEndpoint = async () => {
@@ -19,7 +22,6 @@ export function AuthTester() {
     setTokenStatus(null);
     
     try {
-      const testService = new TestService();
       const response = await testService.getMe();
       setUserData(response.user);
       setTokenStatus(response.tokenStatus);
