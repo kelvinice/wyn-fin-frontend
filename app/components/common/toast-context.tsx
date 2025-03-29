@@ -20,7 +20,6 @@ const ToastContext = createContext<ToastContextProps | null>(null);
 export function ToastProvider({ children }: { children: React.ReactNode }) {
   const [toasts, setToasts] = useState<ToastItem[]>([]);
 
-  // Maximum number of toasts to show at once
   const MAX_TOASTS = 3;
 
   const showToast = (message: string, type: ToastType = 'success', duration: number = 3000) => {
@@ -31,10 +30,8 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
       duration,
     };
     
-    // Add new toast and limit the total number displayed
     setToasts(prev => {
       const updatedToasts = [...prev, newToast];
-      // If we have more toasts than the limit, remove the oldest ones
       if (updatedToasts.length > MAX_TOASTS) {
         return updatedToasts.slice(-MAX_TOASTS);
       }

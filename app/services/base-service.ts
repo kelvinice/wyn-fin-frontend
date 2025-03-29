@@ -6,29 +6,25 @@ export default class BaseService {
 
     constructor(token?: string | null) {
         const config = {
-            baseURL: import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000/api/',
+            baseURL: import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000/api',
             headers: {
                 'Content-Type': 'application/json',
             },
-            // withCredentials: true,
+            withCredentials: true,
         };
 
         this._axios = axios.create(config);
 
-        // Set auth token in header if provided
         if (token) {
             this._axios.defaults.headers.common.Authorization = `Bearer ${token}`;
         }
         
-        // Add response interceptor to handle token expiration
         this._axios.interceptors.response.use(
             response => response,
             error => {
                 if (error.response?.status === 401) {
-                    // Could trigger refresh token logic or redirect to login
                     console.warn('Authentication token expired or invalid');
                     
-                    // Optionally dispatch a global event for token expiration
                     if (typeof window !== 'undefined') {
                         window.dispatchEvent(new CustomEvent('auth:token-expired'));
                     }
@@ -38,7 +34,6 @@ export default class BaseService {
         );
     }
 
-    // Static method to create pre-configured instance with token
     static createWithToken(token: string): BaseService {
         return new BaseService(token);
     }

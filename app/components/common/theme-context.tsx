@@ -11,7 +11,6 @@ interface ThemeContextType {
 
 const THEME_KEY = 'default-theme';
 
-// Safe storage wrapper for fallback
 const storage = {
   get: (key: string) => {
     if (typeof window === 'undefined') return null;
@@ -41,20 +40,15 @@ export function ThemeProvider({
   children: React.ReactNode,
   initialTheme?: Theme 
 }) {
-  // Use stored theme as fallback if available
   const [theme, setTheme] = useState<Theme>(() => {
-    // First priority: initialTheme from server
     if (initialTheme) return initialTheme;
     
-    // Second priority: localStorage
     if (typeof window !== 'undefined') {
       const storedTheme = storage.get(THEME_KEY);
       if (storedTheme === 'light' || storedTheme === 'dark') {
         return storedTheme as Theme;
       }
     }
-    
-    // Default fallback
     return 'light';
   });
   
@@ -62,12 +56,10 @@ export function ThemeProvider({
   const [error, setError] = useState<string | null>(null);
   const fetcher = useFetcher();
 
-  // Apply theme on change
   useEffect(() => {
     if (typeof document !== 'undefined') {
       document.documentElement.setAttribute('data-theme', theme);
       
-      // Add or remove the dark class based on the theme
       if (theme === 'dark') {
         document.documentElement.classList.add('dark');
       } else {
@@ -85,7 +77,7 @@ export function ThemeProvider({
         const newTheme = theme === 'light' ? 'dark' : 'light';
         setIsLoading(true);
         setError(null);
-        setTheme(newTheme); // Update immediately for UI
+        setTheme(newTheme);
         const formData = new FormData();
         formData.append('theme', newTheme);
         
@@ -101,7 +93,6 @@ export function ThemeProvider({
     }
   }), [theme, isLoading, fetcher]);
 
-  // When the fetch action completes
   useEffect(() => {
     if (fetcher.state === 'idle') {
       setIsLoading(false);
@@ -113,7 +104,6 @@ export function ThemeProvider({
     }
   }, [fetcher.state, fetcher.data]);
 
-  // Show any errors if debugging
   useEffect(() => {
     if (error) {
       console.error("Theme context error:", error);

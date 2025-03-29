@@ -21,7 +21,8 @@ import {
   CreditCardIcon,
   CurrencyDollarIcon,
   BriefcaseIcon,
-  CalendarIcon
+  CalendarIcon,
+  TagIcon
 } from "@heroicons/react/24/outline";
 
 // Define notification type
@@ -145,6 +146,8 @@ export default function AppLayout() {
         { path: "/budget", icon: <BanknotesIcon className="w-4 h-4" />, label: "Budget" },
         { path: "/spending", icon: <DocumentTextIcon className="w-4 h-4" />, label: "Spending" },
         { path: "/categories", icon: <ArchiveBoxIcon className="w-4 h-4" />, label: "Categories" },
+        { path: "/periods", icon: <CalendarIcon className="w-4 h-4" />, label: "Periods" },
+        { path: "/classifications", icon: <TagIcon className="w-4 h-4" />, label: "Classifications" }
       ]
     },
     { path: "/profile", icon: <UserCircleIcon className="w-5 h-5" />, label: "Profile" },

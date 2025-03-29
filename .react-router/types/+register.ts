@@ -18,6 +18,8 @@ type Params = {
   "/budget": {};
   "/spending": {};
   "/categories": {};
+  "/periods": {};
+  "/classifications": {};
   "/api/ping": {};
   "/api/set-theme": {};
   "/api/auth/set-session": {};

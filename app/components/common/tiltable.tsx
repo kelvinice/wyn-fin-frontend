@@ -33,8 +33,6 @@ export function TiltAble({ children, className = "", tiltMaxDegrees = 12 }: Prop
     if (!ref.current) return;
     
     const rect = ref.current.getBoundingClientRect();
-    
-    // Calculate normalized coordinates between -1 and 1
     const normalizedX = (e.clientX - rect.left) / rect.width * 2 - 1;
     const normalizedY = (e.clientY - rect.top) / rect.height * 2 - 1;
     
@@ -61,11 +59,8 @@ export function TiltAble({ children, className = "", tiltMaxDegrees = 12 }: Prop
         className={`
           relative rounded-xl overflow-hidden
           w-full h-full
-          
           before:absolute before:inset-0
-          
           after:absolute after:inset-0
-          
           after:pointer-events-none
           transition-shadow duration-300
         `}

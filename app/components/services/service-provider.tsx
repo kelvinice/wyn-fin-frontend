@@ -2,10 +2,14 @@ import React, { createContext, useContext, useMemo } from 'react';
 import { useAuthToken } from '~/components/auth/components/auth-provider';
 import { useAuthCookie } from '~/components/auth/components/auth-cookie-context';
 import BaseService from '~/services/base-service';
+import TestService from '~/services/test-service';
+import PeriodService from '~/services/period-service';
 
 // Service factory context
 type ServiceFactoryContextType = {
   createService: <T extends BaseService>(ServiceClass: new (token?: string | null) => T) => T;
+  testService: TestService;
+  periodService: PeriodService;
 };
 
 const ServiceFactoryContext = createContext<ServiceFactoryContextType | undefined>(undefined);
@@ -23,7 +27,9 @@ export function ServiceProvider({ children }: { children: React.ReactNode }) {
     return {
       createService: <T extends BaseService>(ServiceClass: new (token?: string | null) => T): T => {
         return new ServiceClass(token);
-      }
+      },
+      testService: new TestService(token),
+      periodService: new PeriodService(token),
     };
   }, [token]);
 
@@ -47,4 +53,16 @@ export function useService<T extends BaseService>(
 ): T {
   const { createService } = useServiceFactory();
   return createService(ServiceClass);
+}
+
+export function useTestService() {
+  const context = useContext(ServiceFactoryContext);
+  if (!context) throw new Error('useTestService must be used within a ServiceProvider');
+  return context.testService;
+}
+
+export function usePeriodServiceContext() {
+  const context = useContext(ServiceFactoryContext);
+  if (!context) throw new Error('usePeriodServiceContext must be used within a ServiceProvider');
+  return context.periodService;
 }

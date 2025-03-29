@@ -38,6 +38,15 @@ export default [
       // route(":type", "routes/categories/[type].tsx"),
     ]),
     
+    ...prefix("periods", [
+      index("routes/periods/index.tsx"),
+    ]),
+
+    ...prefix("classifications", [
+      index("routes/classifications/index.tsx"),
+      // route(":id", "routes/classifications/[id].tsx"),
+    ]),
+    
     // route("accounts/connect", "routes/accounts/connect.tsx"),
   ]),
   
@@ -52,8 +61,6 @@ export default [
       route("clear-session", "routes/api/auth/clear-session.tsx"),
     ]),
   ]),
-  
-  
   
   route("*", "routes/not-found.tsx"),
 ] satisfies RouteConfig;

@@ -25,14 +25,12 @@ export function AuthLayout({
 }: AuthLayoutProps) {
   return (
     <div className="min-h-screen flex flex-col md:flex-row">
-      {/* Left side - decorative */}
       <motion.div 
         className="hidden md:flex md:w-1/2 bg-gradient-to-br from-primary/90 via-primary to-primary-focus p-8 justify-center items-center relative overflow-hidden"
         initial={{ opacity: 0, x: -50 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.4 }}
       >
-        {/* Abstract decoration */}
         {showDecorativeImages && (
           <>
             <div className="absolute top-[-5%] right-[-5%] w-[40%] h-[40%] rounded-full bg-white/10 blur-3xl" />
@@ -69,8 +67,6 @@ export function AuthLayout({
           >
             {subtitle}
           </motion.p>
-          
-          {/* Feature highlights */}
           <motion.div
             className="mt-10 space-y-3"
             initial={{ opacity: 0 }}
@@ -95,7 +91,6 @@ export function AuthLayout({
         </div>
       </motion.div>
 
-      {/* Right side - form area */}
       <div className="grow flex items-center justify-center p-6 bg-base-100">
         <motion.div
           className="w-full max-w-md"

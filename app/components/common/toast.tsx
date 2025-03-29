@@ -42,23 +42,19 @@ export function Toast({
     }
     
     if (show && duration > 0) {
-      // Set initial state
       setProgress(100);
       
-      // Use RAF for smoother animation
       const startTime = Date.now();
       const endTime = startTime + duration;
       
       timerRef.current.startTime = startTime;
       timerRef.current.endTime = endTime;
       
-      // Small delay to ensure the component has rendered
       setTimeout(() => {
         setAnimationStarted(true);
         setProgress(0);
       }, 10);
       
-      // Use timeout for the actual closing
       const closeTimeout = setTimeout(() => {
         setIsVisible(false);
         setTimeout(() => {
@@ -153,7 +149,6 @@ export function Toast({
                 transformOrigin: 'left'
               }}
               onTransitionEnd={() => {
-                // Once the progress bar animation completes, start the close sequence
                 setIsVisible(false);
                 setTimeout(() => {
                   if (onClose) onClose();

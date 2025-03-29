@@ -39,7 +39,6 @@ export function ThemeSwitcher({ className = "" }: { className?: string }) {
         <SunIcon className="w-5 h-5 text-yellow-500" />
       </motion.div>
       
-      {/* Invisible element to maintain button size */}
       <div className="w-5 h-5 opacity-0">
         <SunIcon className="w-5 h-5" />
       </div>

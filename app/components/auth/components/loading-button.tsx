@@ -26,7 +26,6 @@ export function LoadingButton({
       whileHover={{ scale: isLoading ? 1 : 1.01 }}
       onClick={onClick}
     >
-      {/* Background animation for loading state */}
       {isLoading && (
         <motion.div
           className="absolute inset-0 bg-gradient-to-r from-primary/80 to-primary"

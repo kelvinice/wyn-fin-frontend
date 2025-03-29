@@ -138,17 +138,14 @@ export const AuthProvider = ({
     });
   };
   
-  // Sign out function
   const signOut = () => {
     setToken(null);
     setUser(null);
     
-    // Clear localStorage fallback
     storage.remove('auth_token');
     storage.remove('auth_user');
     storage.remove('auth_expires');
     
-    // Clear cookies via server action
     fetcher.submit(null, {
       method: 'post',
       action: '/api/auth/clear-session'
