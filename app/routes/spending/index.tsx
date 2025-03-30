@@ -32,7 +32,6 @@ export default function SpendingPage() {
 
   useEffect(() => {
     if (!isPeriodsLoading && periods.length > 0) {
-      console.log("periodId from URL:", periodId);
       if (periodId) {
         const period = periods.find(p => p.id === periodId);
         if (period) {
@@ -48,7 +47,6 @@ export default function SpendingPage() {
     }
   }, [periods, isPeriodsLoading, periodId, navigate]);
 
-  // Handle period change
   const handlePeriodChange = (period: Period) => {
     setSelectedPeriod(period);
     setSelectedPeriodId(period.id);
