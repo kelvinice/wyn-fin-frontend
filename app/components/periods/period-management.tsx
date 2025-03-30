@@ -1,16 +1,27 @@
-import { useState } from "react";
-import { PlusIcon, PencilIcon, TrashIcon } from "@heroicons/react/24/outline";
-import { motion } from "framer-motion";
+import { useState, useMemo } from "react";
+import { PlusIcon, PencilIcon, TrashIcon, ChartBarIcon, ChevronRightIcon, CalendarIcon, ChartPieIcon, ArrowsRightLeftIcon } from "@heroicons/react/24/outline";
+import { motion, AnimatePresence } from "framer-motion";
 import { FancyCard } from "~/components/common/cards/fancy-card";
 import { useToast } from "~/components/common/toast-context";
 import { LoadingButton } from "~/components/auth/components/loading-button";
 import { Modal } from "~/components/common/modal";
 import { usePeriodService, type Period } from "~/hooks/use-period-service";
+import { Link } from "react-router";
 
-// Month name utility
 const getMonthName = (month: number) => {
   return new Date(2000, month - 1, 1).toLocaleString('default', { month: 'long' });
 };
+
+function PeriodStatus({ isCurrentPeriod }: { isCurrentPeriod: boolean }) {
+  return (
+    <div className={`px-2 py-1 rounded-md text-xs font-medium inline-flex items-center ${
+      isCurrentPeriod ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 
+                        'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
+    }`}>
+      {isCurrentPeriod ? 'Current' : 'Past'}
+    </div>
+  );
+}
 
 export function PeriodManagement() {
   const { showToast } = useToast();
@@ -30,6 +41,40 @@ export function PeriodManagement() {
     month: new Date().getMonth() + 1,
   });
   const [deleteConfirmationId, setDeleteConfirmationId] = useState<string | null>(null);
+  const [expandedPeriodId, setExpandedPeriodId] = useState<string | null>(null);
+
+  // Current date info
+  const currentYear = new Date().getFullYear();
+  const currentMonth = new Date().getMonth() + 1;
+
+  // Determine if a period is the current month/year
+  const isCurrentPeriod = (period: Period) => {
+    return period.month === currentMonth && period.year === currentYear;
+  };
+  
+  // Check if current month period exists
+  const hasCurrentMonthPeriod = useMemo(() => {
+    return periods.some(period => isCurrentPeriod(period));
+  }, [periods, currentMonth, currentYear]);
+  
+  // Sort periods by date (newest first)
+  const sortedPeriods = [...periods].sort((a, b) => {
+    // Sort by year descending, then by month descending
+    if (a.year !== b.year) return b.year - a.year;
+    return b.month - a.month;
+  });
+  
+  // Group periods by year
+  const periodsByYear = sortedPeriods.reduce<Record<number, Period[]>>((acc, period) => {
+    if (!acc[period.year]) {
+      acc[period.year] = [];
+    }
+    acc[period.year].push(period);
+    return acc;
+  }, {});
+  
+  // Sort years descending
+  const years = Object.keys(periodsByYear).map(Number).sort((a, b) => b - a);
 
   const handleCreateOrUpdate = async () => {
     try {
@@ -67,6 +112,20 @@ export function PeriodManagement() {
     } catch (error) {
       console.error('Error saving period:', error);
       showToast('Failed to save period', 'error');
+    }
+  };
+
+  // Quick add current month period
+  const handleAddCurrentMonth = async () => {
+    try {
+      await createPeriodMutation.mutateAsync({
+        year: currentYear,
+        month: currentMonth
+      });
+      showToast(`${getMonthName(currentMonth)} ${currentYear} added successfully`, 'success');
+    } catch (error) {
+      console.error('Error adding current month:', error);
+      showToast('Failed to add current month period', 'error');
     }
   };
 
@@ -114,6 +173,11 @@ export function PeriodManagement() {
     }, 300);
   };
 
+  // Toggle expanded state of a period
+  const togglePeriodExpanded = (periodId: string) => {
+    setExpandedPeriodId(expandedPeriodId === periodId ? null : periodId);
+  };
+
   // Determine if any mutation is in progress
   const isLoading = 
     createPeriodMutation.isPending || 
@@ -131,72 +195,186 @@ export function PeriodManagement() {
             </p>
           </div>
           
-          <div className="mt-4 md:mt-0">
+          <div className="mt-4 md:mt-0 flex flex-col sm:flex-row gap-3">
+            {!hasCurrentMonthPeriod && (
+              <button 
+                className="btn btn-outline btn-success"
+                onClick={handleAddCurrentMonth}
+                disabled={isLoading}
+              >
+                <CalendarIcon className="w-5 h-5 mr-2" />
+                Add Current Month
+              </button>
+            )}
             <button 
-              className="btn btn-primary btn-sm"
+              className="btn btn-primary"
               onClick={handleOpenCreateModal}
               disabled={isLoading}
             >
-              <PlusIcon className="w-5 h-5 mr-1" />
+              <PlusIcon className="w-5 h-5 mr-2" />
               Add Period
             </button>
           </div>
         </div>
         
-        <FancyCard className="p-6">
-          {isLoading && periods.length === 0 ? (
-            <div className="text-center py-8">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-              <p>Loading periods...</p>
+        {isLoading && periods.length === 0 ? (
+          <div className="text-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+            <p>Loading periods...</p>
+          </div>
+        ) : periods.length === 0 ? (
+          <div className="text-center py-16 bg-base-100 rounded-lg shadow">
+            <div className="mx-auto w-16 h-16 mb-4 flex items-center justify-center rounded-full bg-primary/10">
+              <CalendarIcon className="w-8 h-8 text-primary" />
             </div>
-          ) : periods.length === 0 ? (
-            <div className="text-center py-8">
-              <p className="text-gray-500 mb-4">No financial periods have been added yet</p>
+            <h2 className="text-xl font-semibold mb-2">No periods yet</h2>
+            <p className="text-gray-500 mb-6 max-w-md mx-auto">
+              Create your first financial period to start budgeting and tracking your expenses
+            </p>
+            <div className="flex flex-col sm:flex-row justify-center gap-3">
               <button 
-                className="btn btn-outline btn-primary"
-                onClick={handleOpenCreateModal}
+                className="btn btn-success"
+                onClick={handleAddCurrentMonth}
+                disabled={isLoading}
               >
-                Create your first period
+                <CalendarIcon className="w-5 h-5 mr-2" />
+                Add Current Month
+              </button>
+              <button 
+                className="btn btn-primary"
+                onClick={handleOpenCreateModal}
+                disabled={isLoading}
+              >
+                <PlusIcon className="w-5 h-5 mr-2" />
+                Custom Period
               </button>
             </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="table w-full">
-                <thead>
-                  <tr>
-                    <th>Period</th>
-                    <th className="text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {periods.map((period) => (
-                    <tr key={period.id}>
-                      <td className="font-medium">
-                        {getMonthName(period.month)} {period.year}
-                      </td>
-                      <td className="flex justify-end gap-2">
-                        <button
-                          className="btn btn-ghost btn-sm btn-circle"
-                          onClick={() => handleOpenEditModal(period)}
-                          disabled={isLoading}
-                        >
-                          <PencilIcon className="w-4 h-4" />
-                        </button>
-                        <button
-                          className="btn btn-ghost btn-sm btn-circle text-error"
-                          onClick={() => setDeleteConfirmationId(period.id)}
-                          disabled={isLoading}
-                        >
-                          <TrashIcon className="w-4 h-4" />
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+          </div>
+        ) : (
+          <>
+            {!hasCurrentMonthPeriod && (
+              <div className="mb-6">
+                <FancyCard className="border-l-4 border-info p-4 flex justify-between items-center">
+                  <div>
+                    <h3 className="font-medium">Current Month Not Found</h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-300">
+                      {getMonthName(currentMonth)} {currentYear} is not set up yet
+                    </p>
+                  </div>
+                  <button
+                    className="btn btn-sm btn-success"
+                    onClick={handleAddCurrentMonth}
+                    disabled={isLoading}
+                  >
+                    Add Now
+                  </button>
+                </FancyCard>
+              </div>
+            )}
+            
+            <div className="space-y-6">
+              {years.map(year => (
+                <div key={year} className="space-y-3">
+                  <h2 className="text-2xl font-semibold dark:text-gray-200 pl-1">{year}</h2>
+                  
+                  <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+                    {periodsByYear[year].sort((a, b) => b.month - a.month).map((period) => (
+                      <motion.div 
+                        key={period.id}
+                        layout
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.95 }}
+                        transition={{ duration: 0.25 }}
+                      >
+                        <FancyCard className={`p-5 ${isCurrentPeriod(period) ? 'border-2 border-primary' : ''}`}>
+                          <div className="flex items-center justify-between mb-4">
+                            <div className="flex items-center space-x-2">
+                              <h3 className="text-xl font-semibold">
+                                {getMonthName(period.month)}
+                              </h3>
+                              {isCurrentPeriod(period) && (
+                                <span className="bg-primary text-white text-xs px-2 py-0.5 rounded">Current</span>
+                              )}
+                            </div>
+                            <button
+                              className={`btn btn-sm btn-circle btn-ghost transition-transform ${
+                                expandedPeriodId === period.id ? 'rotate-90' : ''
+                              }`}
+                              onClick={() => togglePeriodExpanded(period.id)}
+                            >
+                              <ChevronRightIcon className="w-4 h-4" />
+                            </button>
+                          </div>
+
+                          <AnimatePresence>
+                            {expandedPeriodId === period.id && (
+                              <motion.div
+                                initial={{ opacity: 0, height: 0 }}
+                                animate={{ opacity: 1, height: "auto" }}
+                                exit={{ opacity: 0, height: 0 }}
+                                transition={{ duration: 0.2 }}
+                                className="overflow-hidden"
+                              >
+                                <div className="pt-2 pb-4 space-y-3">
+                                  <Link 
+                                    to={`/budget?periodId=${period.id}`}
+                                    className="flex items-center p-2 rounded-md hover:bg-base-200 transition"
+                                  >
+                                    <ChartBarIcon className="w-5 h-5 mr-2" />
+                                    <span>Manage Budget</span>
+                                  </Link>
+                                  
+                                  <Link 
+                                    to={`/transactions?periodId=${period.id}`}
+                                    className="flex items-center p-2 rounded-md hover:bg-base-200 transition"
+                                  >
+                                    <ArrowsRightLeftIcon className="w-5 h-5 mr-2" />
+                                    <span>View Transactions</span>
+                                  </Link>
+                                  
+                                  <Link 
+                                    to={`/reports?periodId=${period.id}`}
+                                    className="flex items-center p-2 rounded-md hover:bg-base-200 transition"
+                                  >
+                                    <ChartPieIcon className="w-5 h-5 mr-2" />
+                                    <span>View Reports</span>
+                                  </Link>
+                                </div>
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+
+                          <div className="flex justify-between pt-2 mt-2 border-t border-base-300">
+                            <div className="space-x-2">
+                              <button
+                                className="btn btn-sm btn-ghost"
+                                onClick={() => handleOpenEditModal(period)}
+                                disabled={isLoading}
+                              >
+                                <PencilIcon className="w-4 h-4 mr-1" />
+                                Edit
+                              </button>
+                            </div>
+                            
+                            <button
+                              className="btn btn-sm btn-ghost text-error"
+                              onClick={() => setDeleteConfirmationId(period.id)}
+                              disabled={isLoading}
+                            >
+                              <TrashIcon className="w-4 h-4 mr-1" />
+                              Delete
+                            </button>
+                          </div>
+                        </FancyCard>
+                      </motion.div>
+                    ))}
+                  </div>
+                </div>
+              ))}
             </div>
-          )}
-        </FancyCard>
+          </>
+        )}
       </div>
       
       {/* Create/Edit Period Modal */}

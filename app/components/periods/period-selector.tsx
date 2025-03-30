@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { CalendarIcon, ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
 import { CreatePeriodButton } from "./create-period-button";
 import { usePeriodService, type Period } from "~/hooks/use-period-service";
@@ -7,13 +7,35 @@ interface PeriodSelectorProps {
   onPeriodChange: (period: Period) => void;
   selectedPeriodId?: string;
   className?: string;
+  showCreateButton?: boolean;
 }
 
-export function PeriodSelector({ onPeriodChange, selectedPeriodId, className = "" }: PeriodSelectorProps) {
+export function PeriodSelector({ 
+  onPeriodChange, 
+  selectedPeriodId, 
+  className = "",
+  showCreateButton = true
+}: PeriodSelectorProps) {
   const [periods, setPeriods] = useState<Period[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedPeriod, setSelectedPeriod] = useState<Period | null>(null);
   const { getAllPeriods } = usePeriodService();
+
+  // Group periods by year
+  const periodsByYear = useMemo(() => {
+    return periods.reduce<Record<number, Period[]>>((acc, period) => {
+      if (!acc[period.year]) {
+        acc[period.year] = [];
+      }
+      acc[period.year].push(period);
+      return acc;
+    }, {});
+  }, [periods]);
+
+  // Sort years descending
+  const years = useMemo(() => {
+    return Object.keys(periodsByYear).map(Number).sort((a, b) => b - a);
+  }, [periodsByYear]);
 
   // Load periods on component mount
   useEffect(() => {
@@ -56,7 +78,7 @@ export function PeriodSelector({ onPeriodChange, selectedPeriodId, className = "
     }
   };
 
-  const handlePeriodChange = (period: Period | null) => {
+  const handlePeriodChange = (period: Period) => {
     setSelectedPeriod(period);
     onPeriodChange(period);
   };
@@ -87,40 +109,64 @@ export function PeriodSelector({ onPeriodChange, selectedPeriodId, className = "
     return `${monthName} ${period.year}`;
   };
 
+  // Get month name utility
+  const getMonthName = (month: number) => {
+    return new Date(2000, month - 1, 1).toLocaleString('default', { month: 'long' });
+  };
+
   return (
-    <div className={`flex items-center ${className}`}>
+    <div className={`flex items-center gap-2 ${className}`}>
       <button
         className="btn btn-ghost btn-sm btn-circle"
         disabled={!selectedPeriod || periods.findIndex(p => p.id === selectedPeriod.id) === periods.length - 1}
         onClick={navigateToPreviousPeriod}
+        aria-label="Previous period"
       >
         <ChevronLeftIcon className="w-5 h-5" />
       </button>
       
       <div className="dropdown dropdown-bottom">
-        <div tabIndex={0} role="button" className="btn btn-sm min-w-40 flex items-center justify-between gap-1">
-          <CalendarIcon className="w-4 h-4" />
+        <div tabIndex={0} role="button" className="btn min-w-40 flex items-center justify-between gap-2">
+          <CalendarIcon className="w-5 h-5" />
           <span className="truncate">
             {loading ? 'Loading...' : formatPeriod(selectedPeriod)}
           </span>
         </div>
         
-        <ul tabIndex={0} className="dropdown-content z-[1] menu shadow-lg bg-base-100 rounded-box w-52 max-h-60 overflow-y-auto">
+        <ul tabIndex={0} className="dropdown-content z-[1] menu shadow-lg bg-base-100 rounded-box w-64 max-h-96 overflow-y-auto p-0">
           {periods.length === 0 ? (
-            <li className="menu-title">
+            <li className="menu-title p-4 text-center">
               <span>No periods available</span>
             </li>
           ) : (
-            periods.map(period => (
-              <li key={period.id}>
-                <a 
-                  className={selectedPeriod?.id === period.id ? 'active' : ''}
-                  onClick={() => handlePeriodChange(period)}
-                >
-                  {formatPeriod(period)}
-                </a>
-              </li>
-            ))
+            <>
+              {years.map(year => (
+                <li key={year} className="menu-section">
+                  <div className="bg-base-200 px-4 py-2 font-semibold sticky top-0">
+                    {year}
+                  </div>
+                  <ul className="p-0">
+                    {periodsByYear[year]
+                      .sort((a, b) => b.month - a.month)
+                      .map(period => (
+                        <li key={period.id}>
+                          <a 
+                            className={selectedPeriod?.id === period.id ? 'active' : ''}
+                            onClick={() => handlePeriodChange(period)}
+                          >
+                            {getMonthName(period.month)}
+                            {period.year === new Date().getFullYear() && 
+                             period.month === new Date().getMonth() + 1 && (
+                              <span className="badge badge-sm badge-primary ml-2">Current</span>
+                            )}
+                          </a>
+                        </li>
+                      ))
+                    }
+                  </ul>
+                </li>
+              ))}
+            </>
           )}
         </ul>
       </div>
@@ -129,9 +175,19 @@ export function PeriodSelector({ onPeriodChange, selectedPeriodId, className = "
         className="btn btn-ghost btn-sm btn-circle"
         disabled={!selectedPeriod || periods.findIndex(p => p.id === selectedPeriod.id) === 0}
         onClick={navigateToNextPeriod}
+        aria-label="Next period"
       >
         <ChevronRightIcon className="w-5 h-5" />
       </button>
+
+      {showCreateButton && (
+        <CreatePeriodButton 
+          onPeriodCreated={loadPeriods}
+          size="sm"
+          variant="outline"
+          label="New"
+        />
+      )}
     </div>
   );
 }

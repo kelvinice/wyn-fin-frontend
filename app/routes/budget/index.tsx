@@ -8,7 +8,7 @@ import type { Period } from "~/hooks/use-period-service";
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: "Budget Management | WynFin" },
+    { title: "Budget Management | WinFin" },
     { name: "description", content: "Manage your monthly budget" },
   ];
 }

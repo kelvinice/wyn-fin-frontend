@@ -61,4 +61,18 @@ export default class BudgetService extends BaseService {
     return this._axios.delete<ApiResponse<void>>(`budgets/${id}`)
       .then(() => undefined);
   }
+
+  /**
+   * Copy budgets from one period to another
+   * @param sourcePeriodId The source period ID to copy from
+   * @param targetPeriodId The target period ID to copy to
+   * @returns Promise with the copied budgets
+   */
+  copyBudgets = (sourcePeriodId: string, targetPeriodId: string): Promise<Budget[]> => {
+    return this._axios.post<ApiResponse<Budget[]>>(`budgets/copy`, {
+      sourcePeriodId,
+      targetPeriodId
+    })
+      .then(response => response.data.data);
+  }
 }

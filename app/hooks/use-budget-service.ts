@@ -71,6 +71,17 @@ export function useBudgetService() {
       }
     });
   };
+
+  const useCopyBudgets = () => {
+    return useMutation({
+      mutationFn: ({ sourcePeriodId, targetPeriodId }: { sourcePeriodId: string; targetPeriodId: string }) => {
+        return contextBudgetService.copyBudgets(sourcePeriodId, targetPeriodId);
+      },
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['budgets'] });
+      }
+    });
+  };
   
   const getAllBudgets = useCallback(async (): Promise<Budget[]> => {
     return contextBudgetService.getAll();
@@ -103,6 +114,7 @@ export function useBudgetService() {
     useCreateBudget,
     useUpdateBudget,
     useDeleteBudget,
+    useCopyBudgets,
     
     getAllBudgets,
     getBudgetsByPeriod,

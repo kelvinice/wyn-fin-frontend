@@ -6,6 +6,7 @@ import TestService from '~/services/test-service';
 import PeriodService from '~/services/period-service';
 import BudgetService from '~/services/budget-service';
 import ClassificationService from '~/services/classification-service';
+import SpendingService from '~/services/spending-service';
 
 // Service factory context
 type ServiceFactoryContextType = {
@@ -14,6 +15,7 @@ type ServiceFactoryContextType = {
   periodService: PeriodService;
   budgetService: BudgetService;
   classificationService: ClassificationService;
+  spendingService: SpendingService;
 };
 
 const ServiceFactoryContext = createContext<ServiceFactoryContextType | undefined>(undefined);
@@ -36,6 +38,7 @@ export function ServiceProvider({ children }: { children: React.ReactNode }) {
       periodService: new PeriodService(token),
       budgetService: new BudgetService(token),
       classificationService: new ClassificationService(token),
+      spendingService: new SpendingService(token),
     };
   }, [token]);
 
@@ -83,4 +86,10 @@ export function useClassificationServiceContext() {
   const context = useContext(ServiceFactoryContext);
   if (!context) throw new Error('useClassificationServiceContext must be used within a ServiceProvider');
   return context.classificationService;
+}
+
+export function useSpendingServiceContext() {
+  const context = useContext(ServiceFactoryContext);
+  if (!context) throw new Error('useSpendingServiceContext must be used within a ServiceProvider');
+  return context.spendingService;
 }
