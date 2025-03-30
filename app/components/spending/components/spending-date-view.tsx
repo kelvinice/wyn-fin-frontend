@@ -1,5 +1,4 @@
 import type { Spending } from "~/models/spending";
-
 import { SpendingList } from "../spending-list";
 import { formatDate } from "~/utils/date-utils";
 
