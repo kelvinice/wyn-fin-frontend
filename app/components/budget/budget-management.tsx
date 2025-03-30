@@ -8,7 +8,7 @@ import { useCurrency } from "~/hooks/use-currency";
 import { usePeriodService } from "~/hooks/use-period-service";
 import { BudgetSummary } from "./budget-summary";
 import { BudgetList } from "./budget-list";
-import { BudgetForm, type BudgetFormData } from "./budget-form";
+import { type BudgetFormData } from "./budget-form";
 import { BudgetHeader } from "./components/budget-header";
 import { BudgetEditModal } from "./components/budget-edit-modal";
 import { BudgetDeleteModal } from "./components/budget-delete-modal";
@@ -36,7 +36,6 @@ export function BudgetManagement({ periodId }: BudgetManagementProps) {
     }
   });
   
-  // Services
   const { 
     useGetBudgetsByPeriod, 
     useCreateBudget,
@@ -48,7 +47,6 @@ export function BudgetManagement({ periodId }: BudgetManagementProps) {
   const { useGetAllClassifications } = useClassificationService();
   const { useGetAllPeriods } = usePeriodService();
   
-  // Fetch data
   const { data: budgets = [], isLoading: isBudgetsLoading } = 
     useGetBudgetsByPeriod(periodId);
   
@@ -58,48 +56,38 @@ export function BudgetManagement({ periodId }: BudgetManagementProps) {
   const { data: periods = [], isLoading: isPeriodsLoading } = 
     useGetAllPeriods();
   
-  // Setup mutations
   const createBudgetMutation = useCreateBudget();
   const updateBudgetMutation = useUpdateBudget();
   const deleteBudgetMutation = useDeleteBudget();
   const copyBudgetMutation = useCopyBudgets();
 
-  // Utility functions
   const {
     getClassification,
     getAvailableClassifications,
     totalBudget
   } = useBudgetUtils(budgets, classifications);
   
-  // Find the current period in periods
   const currentPeriod = useMemo(() => {
     return periods.find(p => p.id === periodId);
   }, [periods, periodId]);
   
-  // Find the previous period (month/year)
   const previousPeriod = useMemo(() => {
     if (!currentPeriod) return null;
     
-    // Get year and month of current period
     const { year, month } = currentPeriod;
     
-    // Calculate previous month (handle January)
     const prevYear = month === 1 ? year - 1 : year;
     const prevMonth = month === 1 ? 12 : month - 1;
     
-    // Find the period matching previous month/year
     return periods.find(p => p.year === prevYear && p.month === prevMonth);
   }, [periods, currentPeriod]);
   
-  // Determine if any data is loading
   const isLoading = isBudgetsLoading || isClassificationsLoading || isPeriodsLoading ||
     createBudgetMutation.isPending || updateBudgetMutation.isPending || 
     deleteBudgetMutation.isPending || copyBudgetMutation.isPending;
   
-  // Get available classifications
   const availableClassifications = getAvailableClassifications(currentBudget, isEditMode);
   
-  // Open modal to create new budget
   const handleAddNew = () => {
     reset({
       classificationId: availableClassifications.length > 0 ? 
@@ -111,7 +99,6 @@ export function BudgetManagement({ periodId }: BudgetManagementProps) {
     setIsModalOpen(true);
   };
   
-  // Open modal to edit budget
   const handleEdit = (budget: Budget) => {
     const classificationId = budget.classification?.secureId || 
                              budget.classification?.id?.toString() || 
@@ -127,18 +114,15 @@ export function BudgetManagement({ periodId }: BudgetManagementProps) {
     setIsModalOpen(true);
   };
   
-  // Handle form submission
   const handleSubmit = async (data: BudgetFormData) => {
     try {
       if (isEditMode && currentBudget) {
-        // Update existing budget
         await updateBudgetMutation.mutateAsync({
           id: currentBudget.secureId,
           data: { amount: data.amount }
         });
         showToast('Budget updated successfully', 'success');
       } else {
-        // Create new budget
         await createBudgetMutation.mutateAsync({
           periodId,
           classificationId: data.classificationId,
@@ -154,7 +138,6 @@ export function BudgetManagement({ periodId }: BudgetManagementProps) {
     }
   };
   
-  // Handle delete confirmation
   const handleDelete = async () => {
     if (!deleteConfirmationId) return;
     
@@ -168,7 +151,6 @@ export function BudgetManagement({ periodId }: BudgetManagementProps) {
     }
   };
   
-  // Handle copying budgets from another period
   const handleCopyBudgets = async (sourcePeriodId: string) => {
     try {
       await copyBudgetMutation.mutateAsync({
@@ -182,14 +164,12 @@ export function BudgetManagement({ periodId }: BudgetManagementProps) {
     }
   };
   
-  // Format period name function
   const formatPeriodName = (period: any) => {
     if (!period) return "";
     const monthName = new Date(2000, period.month - 1).toLocaleString('default', { month: 'long' });
     return `${monthName} ${period.year}`;
   };
   
-  // Update the handler to show confirmation dialog instead of immediately copying
   const handleCopyFromPreviousClick = () => {
     if (!previousPeriod) {
       showToast('No previous period found to copy from', 'error');
@@ -199,7 +179,6 @@ export function BudgetManagement({ periodId }: BudgetManagementProps) {
     setShowCopyFromPreviousModal(true);
   };
   
-  // The actual copy function (called after confirmation)
   const handleCopyFromPrevious = async () => {
     if (!previousPeriod) {
       showToast('No previous period found to copy from', 'error');

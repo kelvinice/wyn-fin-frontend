@@ -1,4 +1,3 @@
-// Define the Spending interface
 export interface Spending {
   id: number;
   secureId: string;
@@ -9,7 +8,6 @@ export interface Spending {
   amount: number;
   createdAt?: string;
   updatedAt?: string;
-  // Relationships
   classification?: {
     id: number;
     secureId: string;
@@ -19,7 +17,6 @@ export interface Spending {
   };
 }
 
-// DTO for creating a spending
 export interface CreateSpendingDto {
   periodId: string;
   classificationId: string;
@@ -27,14 +24,12 @@ export interface CreateSpendingDto {
   amount: number;
 }
 
-// DTO for updating a spending
 export interface UpdateSpendingDto {
   description?: string;
   amount?: number;
   classificationId?: string;
 }
 
-// Define response interface
 export interface ApiResponse<T> {
   success: boolean;
   message: string;

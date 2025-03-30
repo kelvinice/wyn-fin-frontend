@@ -82,7 +82,6 @@ export function SpendingManagement({ periodId }: SpendingManagementProps) {
                    updateSpendingMutation.isPending || 
                    deleteSpendingMutation.isPending;
   
-  // Helper functions
   const getClassification = (classificationId: string | number | undefined) => {
     if (!classificationId) return undefined;
     
@@ -123,7 +122,7 @@ export function SpendingManagement({ periodId }: SpendingManagementProps) {
       remaining,
       percentUsed: budgetAmount > 0 ? (totalSpent / budgetAmount) * 100 : 0
     };
-  }).filter(item => item.spendings.length > 0 || item.budgetAmount > 0); // Only show classifications with spending or budget
+  }).filter(item => item.spendings.length > 0 || item.budgetAmount > 0);
   
   const spendingsByDate = spendings.reduce((acc, spending) => {
     const date = new Date(spending.createdAt || new Date()).toISOString().split('T')[0];
@@ -134,10 +133,8 @@ export function SpendingManagement({ periodId }: SpendingManagementProps) {
     return acc;
   }, {} as Record<string, Spending[]>);
   
-  // Sort dates in descending order
   const sortedDates = Object.keys(spendingsByDate).sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
   
-  // Open modal to create new spending
   const handleAddNew = () => {
     reset({
       classificationId: classifications.length > 0 ? 
@@ -150,7 +147,6 @@ export function SpendingManagement({ periodId }: SpendingManagementProps) {
     setIsModalOpen(true);
   };
   
-  // Open modal to edit spending
   const handleEdit = (spending: Spending) => {
     const classificationId = spending.classification?.secureId || 
                              spending.classification?.id?.toString() || 
@@ -167,7 +163,6 @@ export function SpendingManagement({ periodId }: SpendingManagementProps) {
     setIsModalOpen(true);
   };
   
-  // Handle form submission
   const handleSubmit = async (data: SpendingFormData) => {
     try {
       if (isEditMode && currentSpending) {
@@ -312,7 +307,6 @@ export function SpendingManagement({ periodId }: SpendingManagementProps) {
   );
 }
 
-// Helper function to get month name
 function getMonthName(month: number) {
   return new Date(2000, month - 1, 1).toLocaleString('default', { month: 'long' });
 }
