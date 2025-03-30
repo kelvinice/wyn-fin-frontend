@@ -5,7 +5,7 @@ import type { Classification } from "~/models/classification";
 interface BudgetHeaderProps {
   onAddNew: () => void;
   onCopy: (sourcePeriodId: string) => Promise<void>;
-  onCopyFromPrevious: () => Promise<void>;
+  onCopyFromPrevious: () => void;
   availableClassifications: Classification[];
   isLoading: boolean;
   currentPeriodId: string;

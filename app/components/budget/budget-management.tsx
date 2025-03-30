@@ -12,6 +12,7 @@ import { BudgetForm, type BudgetFormData } from "./budget-form";
 import { BudgetHeader } from "./components/budget-header";
 import { BudgetEditModal } from "./components/budget-edit-modal";
 import { BudgetDeleteModal } from "./components/budget-delete-modal";
+import { BudgetCopyFromPreviousModal } from "./components/budget-copy-from-previous-modal";
 import { BudgetLoading } from "./components/budget-loading";
 import { BudgetEmpty } from "./components/budget-empty";
 
@@ -24,6 +25,7 @@ export function BudgetManagement({ periodId }: BudgetManagementProps) {
   const [isEditMode, setIsEditMode] = useState(false);
   const [currentBudget, setCurrentBudget] = useState<Budget | null>(null);
   const [deleteConfirmationId, setDeleteConfirmationId] = useState<string | null>(null);
+  const [showCopyFromPreviousModal, setShowCopyFromPreviousModal] = useState(false);
   
   const currency = useCurrency();
   const { showToast } = useToast();
@@ -180,7 +182,24 @@ export function BudgetManagement({ periodId }: BudgetManagementProps) {
     }
   };
   
-  // Handle copying from previous month
+  // Format period name function
+  const formatPeriodName = (period: any) => {
+    if (!period) return "";
+    const monthName = new Date(2000, period.month - 1).toLocaleString('default', { month: 'long' });
+    return `${monthName} ${period.year}`;
+  };
+  
+  // Update the handler to show confirmation dialog instead of immediately copying
+  const handleCopyFromPreviousClick = () => {
+    if (!previousPeriod) {
+      showToast('No previous period found to copy from', 'error');
+      return;
+    }
+    
+    setShowCopyFromPreviousModal(true);
+  };
+  
+  // The actual copy function (called after confirmation)
   const handleCopyFromPrevious = async () => {
     if (!previousPeriod) {
       showToast('No previous period found to copy from', 'error');
@@ -193,6 +212,7 @@ export function BudgetManagement({ periodId }: BudgetManagementProps) {
         targetPeriodId: periodId
       });
       showToast('Budget copied from previous month successfully', 'success');
+      setShowCopyFromPreviousModal(false);
     } catch (error) {
       console.error('Error copying from previous month:', error);
       showToast('Failed to copy from previous month', 'error');
@@ -204,7 +224,7 @@ export function BudgetManagement({ periodId }: BudgetManagementProps) {
       <BudgetHeader 
         onAddNew={handleAddNew}
         onCopy={handleCopyBudgets}
-        onCopyFromPrevious={handleCopyFromPrevious}
+        onCopyFromPrevious={handleCopyFromPreviousClick}
         availableClassifications={availableClassifications}
         isLoading={isLoading}
         currentPeriodId={periodId}
@@ -253,6 +273,15 @@ export function BudgetManagement({ periodId }: BudgetManagementProps) {
         onClose={() => setDeleteConfirmationId(null)}
         onDelete={handleDelete}
         isLoading={deleteBudgetMutation.isPending}
+      />
+      
+      <BudgetCopyFromPreviousModal
+        isOpen={showCopyFromPreviousModal}
+        onClose={() => setShowCopyFromPreviousModal(false)}
+        onConfirm={handleCopyFromPrevious}
+        isLoading={copyBudgetMutation.isPending}
+        previousPeriodName={previousPeriod ? formatPeriodName(previousPeriod) : undefined}
+        currentPeriodName={currentPeriod ? formatPeriodName(currentPeriod) : undefined}
       />
     </div>
   );
