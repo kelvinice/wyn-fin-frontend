@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { PencilIcon, TrashIcon } from "@heroicons/react/24/outline";
 import { FancyCard } from "~/components/common/cards/fancy-card";
 import { formatCurrency } from "~/utils/format-utils";
+import { useCurrency } from "~/hooks/use-currency";
 import type { Budget } from "~/hooks/use-budget-service";
 import type { Classification } from "~/hooks/use-classification-service";
 
@@ -13,6 +14,8 @@ interface BudgetItemProps {
 }
 
 export function BudgetItem({ budget, classification, onEdit, onDelete }: BudgetItemProps) {
+  const currency = useCurrency();
+  
   return (
     <FancyCard className="p-4">
       <div className="flex justify-between items-center">
@@ -25,7 +28,7 @@ export function BudgetItem({ budget, classification, onEdit, onDelete }: BudgetI
         </div>
         
         <div className="flex items-center gap-4">
-          <span className="font-semibold">{formatCurrency(budget.amount)}</span>
+          <span className="font-semibold">{formatCurrency(budget.amount, currency)}</span>
           
           <div className="flex items-center space-x-1">
             <button 

@@ -19,6 +19,7 @@ import { themeCookie, authTokenCookie, userDataCookie } from "./cookies.server";
 import { AuthCookieProvider } from "./components/auth/components/auth-cookie-context";
 import type { User } from "./components/auth/core/models";
 import { ServiceProvider } from '~/components/services/service-provider';
+import { AppSettingsProvider } from '~/context/app-settings-context';
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -81,8 +82,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
   );
 }
 
-// Update the default function App() to include AuthCookieProvider
-
 export default function App() {
   const [queryClient] = useState(() => new QueryClient());
   const loaderData = useLoaderData<{
@@ -103,7 +102,9 @@ export default function App() {
           <ThemeProvider initialTheme={loaderData?.theme || "light"}>
             <ToastProvider>
               <ServiceProvider>
-                <Outlet />
+                <AppSettingsProvider>
+                  <Outlet />
+                </AppSettingsProvider>
               </ServiceProvider>
             </ToastProvider>
           </ThemeProvider>

@@ -1,24 +1,12 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { PlusIcon, PencilIcon, TrashIcon } from "@heroicons/react/24/outline";
-import { motion } from "framer-motion";
 import { FancyCard } from "~/components/common/cards/fancy-card";
 import { useToast } from "~/components/common/toast-context";
 import { LoadingButton } from "~/components/auth/components/loading-button";
 import { Modal } from "~/components/common/modal";
-import { useClassificationService } from "~/hooks/use-classification-service";
-
-export interface Classification {
-  id: string;
-  name: string;
-  color?: string;
-  userId: string;
-  createdAt: string;
-  updatedAt: string;
-}
+import { useClassificationService, type Classification } from "~/hooks/use-classification-service";
 
 export function ClassificationManagement() {
-  const [classifications, setClassifications] = useState<Classification[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [currentClassification, setCurrentClassification] = useState<Classification | null>(null);
@@ -29,38 +17,19 @@ export function ClassificationManagement() {
   const [deleteConfirmationId, setDeleteConfirmationId] = useState<string | null>(null);
   
   const { showToast } = useToast();
-  const {
-    getAllClassifications,
-    createClassification,
-    updateClassification,
-    deleteClassification
+  
+  // Use React Query hooks
+  const { 
+    useGetAllClassifications,
+    useCreateClassification,
+    useUpdateClassification,
+    useDeleteClassification
   } = useClassificationService();
   
-  // Load classifications on component mount
-  useEffect(() => {
-    loadClassifications();
-  }, []);
-  
-  // Load all classifications
-  const loadClassifications = async () => {
-    try {
-      setIsLoading(true);
-      const response = await getAllClassifications();
-      
-      // Extract the classifications array from the response
-      // Handle both possible response formats
-      const data = Array.isArray(response) 
-        ? response 
-        : (response.data || []);
-        
-      setClassifications(data);
-    } catch (error) {
-      console.error('Error loading classifications:', error);
-      showToast('Failed to load classifications', 'error');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const { data: classifications = [], isLoading } = useGetAllClassifications();
+  const createClassificationMutation = useCreateClassification();
+  const updateClassificationMutation = useUpdateClassification();
+  const deleteClassificationMutation = useDeleteClassification();
   
   // Open modal to create new classification
   const handleAddNew = () => {
@@ -88,22 +57,23 @@ export function ClassificationManagement() {
     try {
       if (isEditMode && currentClassification) {
         // Update existing classification
-        await updateClassification(currentClassification.id, {
-          name: formData.name,
-          color: formData.color
+        await updateClassificationMutation.mutateAsync({
+          id: currentClassification.secureId || currentClassification.id.toString(),
+          data: {
+            name: formData.name,
+            color: formData.color
+          }
         });
         showToast('Classification updated successfully', 'success');
       } else {
         // Create new classification
-        await createClassification({
+        await createClassificationMutation.mutateAsync({
           name: formData.name,
           color: formData.color
         });
         showToast('Classification created successfully', 'success');
       }
       
-      // Reload classifications and close modal
-      await loadClassifications();
       setIsModalOpen(false);
     } catch (error) {
       console.error('Error saving classification:', error);
@@ -114,9 +84,8 @@ export function ClassificationManagement() {
   // Handle delete confirmation
   const handleDelete = async (id: string) => {
     try {
-      await deleteClassification(id);
+      await deleteClassificationMutation.mutateAsync(id);
       showToast('Classification deleted successfully', 'success');
-      await loadClassifications();
       setDeleteConfirmationId(null);
     } catch (error) {
       console.error('Error deleting classification:', error);
@@ -131,6 +100,7 @@ export function ClassificationManagement() {
         <button 
           className="btn btn-primary btn-sm"
           onClick={handleAddNew}
+          disabled={createClassificationMutation.isPending}
         >
           <PlusIcon className="w-5 h-5 mr-1" />
           New Classification
@@ -154,7 +124,7 @@ export function ClassificationManagement() {
       ) : (
         <div className="grid gap-4">
           {classifications.map((classification) => (
-            <FancyCard key={classification.id} className="p-4">
+            <FancyCard key={classification.secureId || classification.id} className="p-4">
               <div className="flex justify-between items-center">
                 <div className="flex items-center gap-3">
                   <div 
@@ -174,7 +144,7 @@ export function ClassificationManagement() {
                   
                   <button 
                     className="btn btn-ghost btn-sm btn-square text-error"
-                    onClick={() => setDeleteConfirmationId(classification.id)}
+                    onClick={() => setDeleteConfirmationId(classification.secureId || classification.id.toString())}
                   >
                     <TrashIcon className="w-4 h-4" />
                   </button>
@@ -196,13 +166,15 @@ export function ClassificationManagement() {
             <button
               className="btn btn-ghost"
               onClick={() => setIsModalOpen(false)}
+              disabled={createClassificationMutation.isPending || updateClassificationMutation.isPending}
             >
               Cancel
             </button>
             <LoadingButton
               className="btn btn-primary"
               onClick={handleSubmit}
-              isLoading={false}
+              isLoading={createClassificationMutation.isPending || updateClassificationMutation.isPending}
+              loadingText={isEditMode ? "Updating..." : "Creating..."}
             >
               {isEditMode ? "Update" : "Create"}
             </LoadingButton>
@@ -218,6 +190,7 @@ export function ClassificationManagement() {
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               placeholder="e.g., Essential, Discretionary, Savings"
+              disabled={createClassificationMutation.isPending || updateClassificationMutation.isPending}
             />
           </div>
           
@@ -229,6 +202,7 @@ export function ClassificationManagement() {
                 className="input h-10 w-16 p-1 cursor-pointer"
                 value={formData.color}
                 onChange={(e) => setFormData({ ...formData, color: e.target.value })}
+                disabled={createClassificationMutation.isPending || updateClassificationMutation.isPending}
               />
               <input
                 type="text"
@@ -236,6 +210,7 @@ export function ClassificationManagement() {
                 value={formData.color}
                 onChange={(e) => setFormData({ ...formData, color: e.target.value })}
                 placeholder="#hex color"
+                disabled={createClassificationMutation.isPending || updateClassificationMutation.isPending}
               />
             </div>
           </div>
@@ -256,18 +231,21 @@ export function ClassificationManagement() {
         onClose={() => setDeleteConfirmationId(null)}
         title="Confirm Delete"
         size="sm"
+        closeOnClickOutside={!deleteClassificationMutation.isPending}
         footer={
           <>
             <button
               className="btn btn-ghost"
               onClick={() => setDeleteConfirmationId(null)}
+              disabled={deleteClassificationMutation.isPending}
             >
               Cancel
             </button>
             <LoadingButton
               className="btn btn-error"
               onClick={() => deleteConfirmationId && handleDelete(deleteConfirmationId)}
-              isLoading={false}
+              isLoading={deleteClassificationMutation.isPending}
+              loadingText="Deleting..."
             >
               Delete
             </LoadingButton>

@@ -4,12 +4,16 @@ import { useAuthCookie } from '~/components/auth/components/auth-cookie-context'
 import BaseService from '~/services/base-service';
 import TestService from '~/services/test-service';
 import PeriodService from '~/services/period-service';
+import BudgetService from '~/services/budget-service';
+import ClassificationService from '~/services/classification-service';
 
 // Service factory context
 type ServiceFactoryContextType = {
   createService: <T extends BaseService>(ServiceClass: new (token?: string | null) => T) => T;
   testService: TestService;
   periodService: PeriodService;
+  budgetService: BudgetService;
+  classificationService: ClassificationService;
 };
 
 const ServiceFactoryContext = createContext<ServiceFactoryContextType | undefined>(undefined);
@@ -30,6 +34,8 @@ export function ServiceProvider({ children }: { children: React.ReactNode }) {
       },
       testService: new TestService(token),
       periodService: new PeriodService(token),
+      budgetService: new BudgetService(token),
+      classificationService: new ClassificationService(token),
     };
   }, [token]);
 
@@ -65,4 +71,16 @@ export function usePeriodServiceContext() {
   const context = useContext(ServiceFactoryContext);
   if (!context) throw new Error('usePeriodServiceContext must be used within a ServiceProvider');
   return context.periodService;
+}
+
+export function useBudgetServiceContext() {
+  const context = useContext(ServiceFactoryContext);
+  if (!context) throw new Error('useBudgetServiceContext must be used within a ServiceProvider');
+  return context.budgetService;
+}
+
+export function useClassificationServiceContext() {
+  const context = useContext(ServiceFactoryContext);
+  if (!context) throw new Error('useClassificationServiceContext must be used within a ServiceProvider');
+  return context.classificationService;
 }

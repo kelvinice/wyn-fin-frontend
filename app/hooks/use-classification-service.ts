@@ -1,105 +1,115 @@
-import { useState, useCallback } from "react";
-import { useAuthToken } from "~/components/auth/components/auth-provider";
-import BaseService from "~/services/base-service";
-
-interface Classification {
-  id: string;
-  name: string;
-  color?: string;
-  userId: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-interface CreateClassificationDto {
-  name: string;
-  color?: string;
-}
-
-interface UpdateClassificationDto {
-  name?: string;
-  color?: string;
-}
+import { useCallback } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useAuthToken } from '~/components/auth/components/auth-provider';
+import ClassificationService from '~/services/classification-service';
+import type { Classification, CreateClassificationDto, UpdateClassificationDto } from '~/models/classification';
+import { useClassificationServiceContext } from '~/components/services/service-provider';
 
 export function useClassificationService() {
   const authToken = useAuthToken();
-  const [error, setError] = useState<Error | null>(null);
+  const queryClient = useQueryClient();
+  const contextClassificationService = useClassificationServiceContext();
   
   const getService = useCallback(() => {
-    return new BaseService(authToken);
+    return new ClassificationService(authToken);
   }, [authToken]);
   
-  // Get all classifications for the current user
-  const getAllClassifications = async (): Promise<Classification[]> => {
-    try {
-      const service = getService();
-      const response = await service._axios.get('/classifications');
-      
-      // Make sure to extract the classifications array properly
-      // Most API responses nest data in a 'data' property
-      return response.data.data || response.data;
-    } catch (error) {
-      setError(error as Error);
-      throw error;
-    }
+  // Query hook for getting all classifications
+  const useGetAllClassifications = () => {
+    return useQuery({
+      queryKey: ['classifications'],
+      queryFn: async () => {
+        return contextClassificationService.getAll();
+      }
+    });
   };
   
-  // Get a single classification by ID
-  const getClassification = async (id: string): Promise<Classification> => {
-    try {
-      const service = getService();
-      const response = await service._axios.get(`/classifications/${id}`);
-      return response.data;
-    } catch (error) {
-      setError(error as Error);
-      throw error;
-    }
+  // Query hook for getting a single classification
+  const useGetClassificationById = (id: string | undefined) => {
+    return useQuery({
+      queryKey: ['classifications', id],
+      queryFn: async () => {
+        if (!id) return null;
+        return contextClassificationService.getById(id);
+      },
+      enabled: !!id
+    });
   };
   
-  // Create a new classification
-  const createClassification = async (data: CreateClassificationDto): Promise<Classification> => {
-    try {
-      const service = getService();
-      const response = await service._axios.post('/classifications', data);
-      return response.data;
-    } catch (error) {
-      setError(error as Error);
-      throw error;
-    }
+  // Mutation hook for creating a classification
+  const useCreateClassification = () => {
+    return useMutation({
+      mutationFn: (data: CreateClassificationDto) => {
+        return contextClassificationService.create(data);
+      },
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['classifications'] });
+      }
+    });
   };
   
-  // Update an existing classification
-  const updateClassification = async (id: string, data: UpdateClassificationDto): Promise<Classification> => {
-    try {
-      const service = getService();
-      const response = await service._axios.patch(`/classifications/${id}`, data);
-      return response.data;
-    } catch (error) {
-      setError(error as Error);
-      throw error;
-    }
+  // Mutation hook for updating a classification
+  const useUpdateClassification = () => {
+    return useMutation({
+      mutationFn: ({ id, data }: { id: string; data: UpdateClassificationDto }) => {
+        return contextClassificationService.update(id, data);
+      },
+      onSuccess: (_, variables) => {
+        queryClient.invalidateQueries({ queryKey: ['classifications'] });
+        queryClient.invalidateQueries({ queryKey: ['classifications', variables.id] });
+      }
+    });
   };
   
-  // Delete a classification
-  const deleteClassification = async (id: string): Promise<void> => {
-    try {
-      const service = getService();
-      await service._axios.delete(`/classifications/${id}`);
-    } catch (error) {
-      setError(error as Error);
-      throw error;
-    }
+  // Mutation hook for deleting a classification
+  const useDeleteClassification = () => {
+    return useMutation({
+      mutationFn: (id: string) => {
+        return contextClassificationService.delete(id);
+      },
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['classifications'] });
+      }
+    });
   };
+  
+  // Direct method access (for non-React Query use cases)
+  const getAllClassifications = useCallback(async (): Promise<Classification[]> => {
+    return contextClassificationService.getAll();
+  }, [contextClassificationService]);
+  
+  const getClassification = useCallback(async (id: string): Promise<Classification> => {
+    return contextClassificationService.getById(id);
+  }, [contextClassificationService]);
+  
+  const createClassification = useCallback(async (data: CreateClassificationDto): Promise<Classification> => {
+    return contextClassificationService.create(data);
+  }, [contextClassificationService]);
+  
+  const updateClassification = useCallback(async (id: string, data: UpdateClassificationDto): Promise<Classification> => {
+    return contextClassificationService.update(id, data);
+  }, [contextClassificationService]);
+  
+  const deleteClassification = useCallback(async (id: string): Promise<void> => {
+    return contextClassificationService.delete(id);
+  }, [contextClassificationService]);
   
   return {
+    // React Query hooks
+    useGetAllClassifications,
+    useGetClassificationById,
+    useCreateClassification,
+    useUpdateClassification,
+    useDeleteClassification,
+    
+    // Direct method access
     getAllClassifications,
     getClassification,
     createClassification,
     updateClassification,
-    deleteClassification,
-    error
+    deleteClassification
   };
 }
 
-// Also export the Classification type for convenience
-export type { Classification };
+// Export types from the models file for convenience
+export type { Classification, CreateClassificationDto, UpdateClassificationDto } from '~/models/classification';

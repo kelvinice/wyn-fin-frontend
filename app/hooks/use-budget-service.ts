@@ -1,120 +1,117 @@
-import { useState, useCallback } from "react";
-import { useAuthToken } from "~/components/auth/components/auth-provider";
-import BaseService from "~/services/base-service";
-
-interface Budget {
-  id: string;
-  periodId: string;
-  classificationId: string;
-  userId: string;
-  amount: number;
-  createdAt: string;
-  updatedAt: string;
-  classification?: {
-    id: string;
-    name: string;
-    color?: string;
-  };
-}
-
-interface CreateBudgetDto {
-  periodId: string;
-  classificationId: string;
-  amount: number;
-}
-
-interface UpdateBudgetDto {
-  amount: number;
-}
+import { useCallback } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import type { Budget, CreateBudgetDto, UpdateBudgetDto } from '~/models/budget';
+import { useBudgetServiceContext } from '~/components/services/service-provider';
 
 export function useBudgetService() {
-  const authToken = useAuthToken();
-  const [error, setError] = useState<Error | null>(null);
+  const queryClient = useQueryClient();
+  const contextBudgetService = useBudgetServiceContext();
   
-  const getService = useCallback(() => {
-    return new BaseService(authToken);
-  }, [authToken]);
-  
-  // Get all budgets
-  const getAllBudgets = async (): Promise<Budget[]> => {
-    try {
-      const service = getService();
-      const response = await service._axios.get('/budgets');
-      return response.data.data || response.data;
-    } catch (error) {
-      setError(error as Error);
-      throw error;
-    }
+  const useGetAllBudgets = () => {
+    return useQuery({
+      queryKey: ['budgets'],
+      queryFn: async () => {
+        return contextBudgetService.getAll();
+      }
+    });
   };
   
-  // Get budgets by period
-  const getBudgetsByPeriod = async (periodId: string): Promise<Budget[]> => {
-    try {
-      const service = getService();
-      const response = await service._axios.get(`/budgets?periodId=${periodId}`);
-      return response.data.data || response.data;
-    } catch (error) {
-      setError(error as Error);
-      throw error;
-    }
+  const useGetBudgetsByPeriod = (periodId: string | undefined) => {
+    return useQuery({
+      queryKey: ['budgets', 'period', periodId],
+      queryFn: async () => {
+        if (!periodId) return [];
+        return contextBudgetService.getByPeriod(periodId);
+      },
+      enabled: !!periodId
+    });
   };
   
-  // Get a single budget by ID
-  const getBudget = async (id: string): Promise<Budget> => {
-    try {
-      const service = getService();
-      const response = await service._axios.get(`/budgets/${id}`);
-      return response.data.data || response.data;
-    } catch (error) {
-      setError(error as Error);
-      throw error;
-    }
+  const useGetBudgetById = (id: string | undefined) => {
+    return useQuery({
+      queryKey: ['budgets', id],
+      queryFn: async () => {
+        if (!id) return null;
+        return contextBudgetService.getById(id);
+      },
+      enabled: !!id
+    });
   };
   
-  // Create a new budget
-  const createBudget = async (data: CreateBudgetDto): Promise<Budget> => {
-    try {
-      const service = getService();
-      const response = await service._axios.post('/budgets', data);
-      return response.data.data || response.data;
-    } catch (error) {
-      setError(error as Error);
-      throw error;
-    }
+  const useCreateBudget = () => {
+    return useMutation({
+      mutationFn: (budgetData: CreateBudgetDto) => {
+        return contextBudgetService.create(budgetData);
+      },
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['budgets'] });
+      }
+    });
   };
   
-  // Update an existing budget
-  const updateBudget = async (id: string, data: UpdateBudgetDto): Promise<Budget> => {
-    try {
-      const service = getService();
-      const response = await service._axios.patch(`/budgets/${id}`, data);
-      return response.data.data || response.data;
-    } catch (error) {
-      setError(error as Error);
-      throw error;
-    }
+  const useUpdateBudget = () => {
+    return useMutation({
+      mutationFn: ({ id, data }: { id: string; data: UpdateBudgetDto }) => {
+        return contextBudgetService.update(id, data);
+      },
+      onSuccess: (_, variables) => {
+        queryClient.invalidateQueries({ queryKey: ['budgets'] });
+        queryClient.invalidateQueries({ queryKey: ['budgets', variables.id] });
+      }
+    });
   };
   
-  // Delete a budget
-  const deleteBudget = async (id: string): Promise<void> => {
-    try {
-      const service = getService();
-      await service._axios.delete(`/budgets/${id}`);
-    } catch (error) {
-      setError(error as Error);
-      throw error;
-    }
+  const useDeleteBudget = () => {
+    return useMutation({
+      mutationFn: (id: string) => {
+        return contextBudgetService.delete(id);
+      },
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['budgets'] });
+      }
+    });
   };
+  
+  const getAllBudgets = useCallback(async (): Promise<Budget[]> => {
+    return contextBudgetService.getAll();
+  }, [contextBudgetService]);
+  
+  const getBudgetsByPeriod = useCallback(async (periodId: string): Promise<Budget[]> => {
+    return contextBudgetService.getByPeriod(periodId);
+  }, [contextBudgetService]);
+  
+  const getBudget = useCallback(async (id: string): Promise<Budget> => {
+    return contextBudgetService.getById(id);
+  }, [contextBudgetService]);
+  
+  const createBudget = useCallback(async (data: CreateBudgetDto): Promise<Budget> => {
+    return contextBudgetService.create(data);
+  }, [contextBudgetService]);
+  
+  const updateBudget = useCallback(async (id: string, data: UpdateBudgetDto): Promise<Budget> => {
+    return contextBudgetService.update(id, data);
+  }, [contextBudgetService]);
+  
+  const deleteBudget = useCallback(async (id: string): Promise<void> => {
+    return contextBudgetService.delete(id);
+  }, [contextBudgetService]);
   
   return {
+    useGetAllBudgets,
+    useGetBudgetsByPeriod,
+    useGetBudgetById,
+    useCreateBudget,
+    useUpdateBudget,
+    useDeleteBudget,
+    
     getAllBudgets,
     getBudgetsByPeriod,
     getBudget,
     createBudget,
     updateBudget,
-    deleteBudget,
-    error
+    deleteBudget
   };
 }
 
-export type { Budget, CreateBudgetDto, UpdateBudgetDto };
+// Export types from the models file for convenience
+export type { Budget, CreateBudgetDto, UpdateBudgetDto } from '~/models/budget';
