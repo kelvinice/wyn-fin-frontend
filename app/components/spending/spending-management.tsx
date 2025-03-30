@@ -15,7 +15,6 @@ import { SpendingEmpty } from "./components/spending-empty";
 import { SpendingEditModal } from "./components/spending-edit-modal";
 import { SpendingBudgetView } from "./components/spending-budget-view";
 import { SpendingDeleteModal } from "./components/spending-delete-modal";
-import { EnhancedPeriodSelector } from "../periods/enhanced-period-selector";
 
 interface SpendingManagementProps {
   periodId: string;
@@ -41,7 +40,6 @@ export function SpendingManagement({ periodId }: SpendingManagementProps) {
     }
   });
   
-  // Services
   const { 
     useGetSpendingsByPeriod, 
     useCreateSpending,
@@ -53,11 +51,9 @@ export function SpendingManagement({ periodId }: SpendingManagementProps) {
   const { useGetAllClassifications } = useClassificationService();
   const { useGetAllPeriods } = usePeriodService();
   
-  // Fetch data
   const { data: periods = [], isLoading: isPeriodsLoading } = 
     useGetAllPeriods();
     
-  // Use the passed periodId or the selected period's ID
   const activePeriodId = selectedPeriod?.id || periodId;
     
   const { data: spendings = [], isLoading: isSpendingsLoading } = 
@@ -69,12 +65,10 @@ export function SpendingManagement({ periodId }: SpendingManagementProps) {
   const { data: classifications = [], isLoading: isClassificationsLoading } = 
     useGetAllClassifications();
   
-  // Setup mutations
   const createSpendingMutation = useCreateSpending();
   const updateSpendingMutation = useUpdateSpending();
   const deleteSpendingMutation = useDeleteSpending();
   
-  // Set the initial selected period based on periodId or first period
   useEffect(() => {
     if (!isPeriodsLoading && periods.length > 0) {
       const initialPeriod = periods.find(p => p.id === periodId) || periods[0];
@@ -82,12 +76,6 @@ export function SpendingManagement({ periodId }: SpendingManagementProps) {
     }
   }, [periods, periodId, isPeriodsLoading]);
   
-  // Handle period change
-  const handlePeriodChange = (period: Period) => {
-    setSelectedPeriod(period);
-  };
-
-  // Determine if any data is loading
   const isLoading = isSpendingsLoading || isBudgetsLoading || 
                    isClassificationsLoading || isPeriodsLoading ||
                    createSpendingMutation.isPending || 
@@ -115,7 +103,6 @@ export function SpendingManagement({ periodId }: SpendingManagementProps) {
     );
   };
   
-  // Calculate spending by classification
   const spendingsByClassification = classifications.map(classification => {
     const classificationId = classification.secureId || classification.id;
     const classificationSpendings = spendings.filter(s => {
@@ -138,7 +125,6 @@ export function SpendingManagement({ periodId }: SpendingManagementProps) {
     };
   }).filter(item => item.spendings.length > 0 || item.budgetAmount > 0); // Only show classifications with spending or budget
   
-  // Group spendings by date
   const spendingsByDate = spendings.reduce((acc, spending) => {
     const date = new Date(spending.createdAt || new Date()).toISOString().split('T')[0];
     if (!acc[date]) {
@@ -185,7 +171,6 @@ export function SpendingManagement({ periodId }: SpendingManagementProps) {
   const handleSubmit = async (data: SpendingFormData) => {
     try {
       if (isEditMode && currentSpending) {
-        // Update existing spending
         await updateSpendingMutation.mutateAsync({
           id: currentSpending.secureId,
           data: {
@@ -196,7 +181,6 @@ export function SpendingManagement({ periodId }: SpendingManagementProps) {
         });
         showToast('Spending updated successfully', 'success');
       } else {
-        // Create new spending
         await createSpendingMutation.mutateAsync({
           periodId: activePeriodId,
           classificationId: data.classificationId,
@@ -212,8 +196,6 @@ export function SpendingManagement({ periodId }: SpendingManagementProps) {
       showToast('Failed to save spending', 'error');
     }
   };
-  
-  // Handle delete confirmation
   const handleDelete = async () => {
     if (!deleteConfirmationId) return;
     
@@ -227,23 +209,13 @@ export function SpendingManagement({ periodId }: SpendingManagementProps) {
     }
   };
   
-  // Calculate total budget and spending
   const totalBudget = budgets.reduce((sum, budget) => sum + budget.amount, 0);
   const totalSpending = spendings.reduce((sum, spending) => sum + spending.amount, 0);
   const totalRemaining = totalBudget - totalSpending;
   const percentSpent = totalBudget > 0 ? (totalSpending / totalBudget) * 100 : 0;
   
   return (
-    <div>
-      <div className="mb-6">
-        <EnhancedPeriodSelector
-          periods={periods}
-          selectedPeriod={selectedPeriod}
-          onPeriodChange={handlePeriodChange}
-          isLoading={isPeriodsLoading}
-        />
-      </div>
-      
+    <>
       <SpendingHeader
         onAddNew={handleAddNew}
         isLoading={isLoading}
@@ -336,7 +308,7 @@ export function SpendingManagement({ periodId }: SpendingManagementProps) {
         onDelete={handleDelete}
         isLoading={deleteSpendingMutation.isPending}
       />
-    </div>
+    </>
   );
 }
 

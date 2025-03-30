@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLoaderData, useNavigate, type LoaderFunction } from "react-router";
 
 import { RequireAuth } from "~/components/auth/components/auth-provider";
 import { SpendingManagement } from "~/components/spending/spending-management";
-import { usePeriodService } from "~/hooks/use-period-service";
+import { usePeriodService, type Period } from "~/hooks/use-period-service";
 import { FancyCard } from "~/components/common/cards/fancy-card";
+import { EnhancedPeriodSelector } from "~/components/periods/enhanced-period-selector";
 import type { Route } from "../+types/home";
 
 export function meta({}: Route.MetaArgs) {
@@ -17,27 +18,42 @@ export function meta({}: Route.MetaArgs) {
 export const loader: LoaderFunction = async ({ request }) => {
   const url = new URL(request.url);
   const periodId = url.searchParams.get("periodId") || "";
-  return new Response(JSON.stringify({ periodId }));
+  return { periodId };
 };
 
 export default function SpendingPage() {
   const { periodId } = useLoaderData<{ periodId: string }>();
-  const [selectedPeriodId, setSelectedPeriodId] = useState(periodId);
+  const [selectedPeriodId, setSelectedPeriodId] = useState(periodId || "");
+  const [selectedPeriod, setSelectedPeriod] = useState<Period | null>(null);
   const navigate = useNavigate();
 
-  // Get periods data
   const { useGetAllPeriods } = usePeriodService();
   const { data: periods = [], isLoading: isPeriodsLoading } = useGetAllPeriods();
 
-  // Handle period change
-  const handlePeriodChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const newPeriodId = e.target.value;
-    setSelectedPeriodId(newPeriodId);
-    navigate(`/spending?periodId=${newPeriodId}`);
-  };
+  useEffect(() => {
+    if (!isPeriodsLoading && periods.length > 0) {
+      console.log("periodId from URL:", periodId);
+      if (periodId) {
+        const period = periods.find(p => p.id === periodId);
+        if (period) {
+          setSelectedPeriod(period);
+          setSelectedPeriodId(periodId);
+          return;
+        }
+      }
+      
+      const fallbackPeriod = periods[0];
+      setSelectedPeriod(fallbackPeriod);
+      setSelectedPeriodId(fallbackPeriod.id);
+    }
+  }, [periods, isPeriodsLoading, periodId, navigate]);
 
-  // Find the selected period to display its details
-  const selectedPeriod = periods.find(p => p.id === selectedPeriodId);
+  // Handle period change
+  const handlePeriodChange = (period: Period) => {
+    setSelectedPeriod(period);
+    setSelectedPeriodId(period.id);
+    navigate(`/spending?periodId=${period.id}`);
+  };
   
   return (
     <RequireAuth>
@@ -50,20 +66,14 @@ export default function SpendingPage() {
             </p>
           </div>
           
-          <div className="mt-4 md:mt-0 w-full md:w-auto">
-            <select 
-              className="select select-bordered w-full md:w-auto"
-              value={selectedPeriodId}
-              onChange={handlePeriodChange}
-              disabled={isPeriodsLoading}
-            >
-              <option value="" disabled>Select a financial period</option>
-              {periods.map(period => (
-                <option key={period.id} value={period.id}>
-                  {new Date(2000, period.month - 1).toLocaleString('default', { month: 'long' })} {period.year}
-                </option>
-              ))}
-            </select>
+          <div className="mt-4 md:mt-0 w-full md:w-64">
+            <EnhancedPeriodSelector
+              periods={periods}
+              selectedPeriod={selectedPeriod}
+              onPeriodChange={handlePeriodChange}
+              isLoading={isPeriodsLoading}
+              showCreateButton={false}
+            />
           </div>
         </div>
         

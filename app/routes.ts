@@ -29,6 +29,7 @@ export default [
     
     ...prefix("spending", [
       index("routes/spending/index.tsx"), 
+      
       // route("new", "routes/spending/new.tsx"),
       // route(":id", "routes/spending/[id].tsx"),
     ]),
