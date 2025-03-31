@@ -240,7 +240,7 @@ export function SpendingManagement({ periodId }: SpendingManagementProps) {
             <Tab 
               className={({ selected }) =>
                 `w-full py-2.5 text-sm font-medium rounded-md focus:outline-none ${
-                  selected ? 'bg-primary text-white' : 'text-gray-600 hover:bg-base-300'
+                  selected ? 'bg-primary text-white' : 'text-gray-600 hover:bg-base-300 cursor-pointer'
                 }`
               }
               onClick={() => setViewMode('date')}
@@ -250,7 +250,7 @@ export function SpendingManagement({ periodId }: SpendingManagementProps) {
             <Tab 
               className={({ selected }) =>
                 `w-full py-2.5 text-sm font-medium rounded-md focus:outline-none ${
-                  selected ? 'bg-primary text-white' : 'text-gray-600 hover:bg-base-300'
+                  selected ? 'bg-primary text-white' : 'text-gray-600 hover:bg-base-300 cursor-pointer'
                 }`
               }
               onClick={() => setViewMode('classification')}

@@ -7,10 +7,7 @@ import { LoadingButton } from "~/components/auth/components/loading-button";
 import { Modal } from "~/components/common/modal";
 import { usePeriodService, type Period } from "~/hooks/use-period-service";
 import { Link } from "react-router";
-
-const getMonthName = (month: number) => {
-  return new Date(2000, month - 1, 1).toLocaleString('default', { month: 'long' });
-};
+import { getMonthName } from "~/utils/date-utils";
 
 function PeriodStatus({ isCurrentPeriod }: { isCurrentPeriod: boolean }) {
   return (
