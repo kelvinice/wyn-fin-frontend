@@ -7,9 +7,9 @@ type AuthContextType = {
   user: User | null;
   token: string | null;
   isAuthenticated: boolean;
-  signIn: (token: string, user: User, expiresIn: number) => Promise<void>;
+  signIn: (token: string, user: User, expiresIn: number, refreshToken?: string) => Promise<void>; // Update the signIn type
   signOut: () => void;
-  getAuthToken: () => string | null;
+  getAuthToken: () => string | null; // Add this new method
 };
 
 // Create a context with a default value
@@ -17,7 +17,7 @@ const AuthContext = createContext<AuthContextType>({
   user: null,
   token: null,
   isAuthenticated: false,
-  signIn: () => Promise.resolve(),
+  signIn: () => Promise.resolve(), // Update the default signIn
   signOut: () => {},
   getAuthToken: () => null,
 });
@@ -46,38 +46,39 @@ export const AuthProvider = ({
       return;
     }
     
-    // Check for auth cookies on component mount
-    const checkAuthCookies = async () => {
+    // Use the get-session API instead of localStorage
+    const loadAuthState = async () => {
       try {
         const response = await fetch('/api/auth/get-session');
+        const data = await response.json();
         
-        if (response.ok) {
-          const data = await response.json();
-          if (data.token && data.userData) {
-            setToken(data.token);
-            setUser(data.userData);
-          }
+        if (data.token && data.userData) {
+          setToken(data.token);
+          setUser(data.userData);
         }
       } catch (error) {
-        console.error('Failed to retrieve auth data from cookies:', error);
+        console.error('Failed to load auth session:', error);
       } finally {
         setLoading(false);
       }
     };
     
-    checkAuthCookies();
-  }, [initialAuthState.isAuthenticated, fetcher]);
+    loadAuthState();
+  }, [initialAuthState.isAuthenticated]);
 
   // Sign in function
-  const signIn = (authToken: string, userData: User, expiresIn: number): Promise<void> => {
+  const signIn = (authToken: string, userData: User, expiresIn: number, refreshToken?: string): Promise<void> => {
     setToken(authToken);
     setUser(userData);
     
-    // Store auth data in cookies via server action
+    // Store auth data in cookies via server action and return the promise
     const formData = new FormData();
     formData.append('token', authToken);
     formData.append('userData', JSON.stringify(userData));
     formData.append('expiresIn', expiresIn.toString());
+    if (refreshToken) {
+      formData.append('refreshToken', refreshToken);
+    }
     
     return new Promise((resolve, reject) => {
       fetcher.submit(formData, {
@@ -113,21 +114,26 @@ export const AuthProvider = ({
     });
   };
   
-  // Check for token expiration using server endpoint
+  // Check for token expiration
   useEffect(() => {
-    if (typeof window === 'undefined' || !token) return;
+    if (typeof window === 'undefined') return;
     
     const checkTokenExpiration = async () => {
       try {
-        const response = await fetch('/api/auth/check-token-validity');
+        const response = await fetch('/api/auth/get-session');
         const data = await response.json();
         
-        if (!data.isValid) {
-          console.log('Token expired, logging out');
-          signOut();
+        if (data.expiration && token) {
+          const expirationTime = new Date(data.expiration).getTime();
+          const currentTime = new Date().getTime();
+          
+          if (currentTime > expirationTime) {
+            console.log('Token expired, logging out');
+            signOut();
+          }
         }
       } catch (error) {
-        console.error('Error checking token validity:', error);
+        console.error('Failed to check token expiration:', error);
       }
     };
     
@@ -191,8 +197,8 @@ export const useIsAuthenticated = () => {
 
 export const useSignIn = () => {
   const { signIn } = useAuth();
-  return (data: {token: string, user: User, expiresIn: number}) => {
-    return signIn(data.token, data.user, data.expiresIn);
+  return (data: {token: string, user: User, expiresIn: number, refreshToken?: string}) => {
+    return signIn(data.token, data.user, data.expiresIn, data.refreshToken);
   };
 };
 
@@ -204,6 +210,45 @@ export const useSignOut = () => {
 export const useAuthToken = () => {
   const { getAuthToken } = useAuth();
   return getAuthToken();
+};
+
+// Add the useRefreshToken hook
+export const useRefreshToken = () => {
+  const { user, signIn } = useAuth();
+  
+  return async (): Promise<boolean> => {
+    if (!user) {
+      console.error('No user found');
+      return false;
+    }
+    
+    try {
+      // The refresh token is stored in an HTTP-only cookie,
+      // so we don't need to send it explicitly in the request body
+      const response = await fetch('/api/auth/refresh-token', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+      
+      const result = await response.json();
+      
+      if (!result.success || !result.data) {
+        console.error('Token refresh failed:', result.message);
+        return false;
+      }
+      
+      const { token, user: userData, expiresIn } = result.data;
+      
+      // Update auth state with new token
+      await signIn(token, userData, expiresIn);
+      return true;
+    } catch (error) {
+      console.error('Error refreshing token:', error);
+      return false;
+    }
+  };
 };
 
 // RequireAuth component for protected routes that works with SSR
@@ -238,24 +283,4 @@ export const RequireAuth = ({ children, fallbackPath = "/auth/login" }: {
   
   // After hydration, only render children if authenticated
   return isAuthenticated ? <>{children}</> : null;
-};
-
-// Route loader function for React Router v7 data loading API
-export const authLoader = (redirectTo = "/auth/login") => {
-  return async ({ request }: { request: Request }) => {
-    // For server-side rendering, we'll use cookies
-    const cookieHeader = request.headers.get("Cookie");
-    
-    // We'll rely on cookies for both server and client authentication
-    const response = await fetch('/api/auth/check-auth', {
-      headers: { Cookie: cookieHeader || '' }
-    });
-    
-    const data = await response.json();
-    if (!data.isAuthenticated) {
-      return { redirect: redirectTo };
-    }
-    
-    return null;
-  };
 };

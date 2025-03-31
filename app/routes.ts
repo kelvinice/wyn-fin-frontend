@@ -60,6 +60,7 @@ export default [
     ...prefix("auth", [
       route("set-session", "routes/api/auth/set-session.tsx"),
       route("clear-session", "routes/api/auth/clear-session.tsx"),
+      route("refresh-token", "routes/api/auth/refresh-token.tsx"),
     ]),
   ]),
   

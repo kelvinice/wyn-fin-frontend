@@ -16,7 +16,8 @@ export function useLogin() {
       await signIn({
         token: response.token,
         user: response.user,
-        expiresIn: response.expiresIn
+        expiresIn: response.expiresIn,
+        refreshToken: response.refreshToken,
       });
       
       return response;
