@@ -81,13 +81,13 @@ export function SpendingForm({
         <label className="label">
           <span className="label-text font-medium">Amount</span>
         </label>
-        <div className="relative">
-          <span className="absolute top-1/2 transform -translate-y-1/2 left-3 text-gray-500">
+        <div className="relative flex gap-2 items-center">
+          <span className="text-gray-500">
             {currency === 'IDR' ? 'Rp' : currency === 'USD' ? '$' : ''}
           </span>
           <input
             type="number"
-            className="input input-bordered w-full pl-7"
+            className="input input-bordered w-full"
             min="0"
             step={currency === 'IDR' ? "1000" : "0.01"}
             disabled={isLoading}
@@ -98,6 +98,19 @@ export function SpendingForm({
             })}
           />
         </div>
+      </div>
+      
+      {/* Add date input field */}
+      <div>
+        <label className="label">
+          <span className="label-text font-medium">Date</span>
+        </label>
+        <input
+          type="date"
+          className="input input-bordered w-full"
+          disabled={isLoading}
+          {...register("date")}
+        />
       </div>
     </div>
   );

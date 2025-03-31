@@ -6,6 +6,7 @@ export interface Spending {
   userId?: number | string;
   description: string;
   amount: number;
+  date?: string;
   createdAt?: string;
   updatedAt?: string;
   classification?: {
@@ -22,12 +23,14 @@ export interface CreateSpendingDto {
   classificationId: string;
   description: string;
   amount: number;
+  date?: string;
 }
 
 export interface UpdateSpendingDto {
   description?: string;
   amount?: number;
   classificationId?: string;
+  date?: string;
 }
 
 export interface ApiResponse<T> {

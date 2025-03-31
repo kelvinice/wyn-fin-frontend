@@ -15,6 +15,7 @@ import { SpendingEmpty } from "./components/spending-empty";
 import { SpendingEditModal } from "./components/spending-edit-modal";
 import { SpendingBudgetView } from "./components/spending-budget-view";
 import { SpendingDeleteModal } from "./components/spending-delete-modal";
+import { getMonthName } from "~/utils/date-utils";
 
 interface SpendingManagementProps {
   periodId: string;
@@ -36,7 +37,8 @@ export function SpendingManagement({ periodId }: SpendingManagementProps) {
     defaultValues: {
       classificationId: "",
       description: "",
-      amount: 0
+      amount: 0,
+      date: new Date().toISOString().split('T')[0] // Today's date in YYYY-MM-DD format
     }
   });
   
@@ -125,22 +127,45 @@ export function SpendingManagement({ periodId }: SpendingManagementProps) {
   }).filter(item => item.spendings.length > 0 || item.budgetAmount > 0);
   
   const spendingsByDate = spendings.reduce((acc, spending) => {
-    const date = new Date(spending.createdAt || new Date()).toISOString().split('T')[0];
-    if (!acc[date]) {
-      acc[date] = [];
+    // Check if spending has an explicit date field
+    if (spending.date) {
+      // Use the provided date
+      if (!acc[spending.date]) {
+        acc[spending.date] = [];
+      }
+      acc[spending.date].push(spending);
+    } else if (spending.createdAt) {
+      // Use createdAt as fallback if available
+      const createdDate = new Date(spending.createdAt).toISOString().split('T')[0];
+      if (!acc[createdDate]) {
+        acc[createdDate] = [];
+      }
+      acc[createdDate].push(spending);
+    } else {
+      // Group spendings with no date in a special "No Date" group
+      const noDateKey = "no-date";
+      if (!acc[noDateKey]) {
+        acc[noDateKey] = [];
+      }
+      acc[noDateKey].push(spending);
     }
-    acc[date].push(spending);
     return acc;
   }, {} as Record<string, Spending[]>);
   
-  const sortedDates = Object.keys(spendingsByDate).sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
+  // Sort dates with "no-date" at the bottom
+  const sortedDates = Object.keys(spendingsByDate).sort((a, b) => {
+    if (a === "no-date") return 1; // "no-date" always at the bottom
+    if (b === "no-date") return -1; // "no-date" always at the bottom
+    return new Date(b).getTime() - new Date(a).getTime(); // Normal date sorting (newest first)
+  });
   
   const handleAddNew = () => {
     reset({
       classificationId: classifications.length > 0 ? 
         (classifications[0].secureId || classifications[0].id?.toString() || "") : "",
       description: "",
-      amount: 0
+      amount: 0,
+      date: new Date().toISOString().split('T')[0] // Today's date
     });
     setCurrentSpending(null);
     setIsEditMode(false);
@@ -149,13 +174,14 @@ export function SpendingManagement({ periodId }: SpendingManagementProps) {
   
   const handleEdit = (spending: Spending) => {
     const classificationId = spending.classification?.secureId || 
-                             spending.classification?.id?.toString() || 
-                             spending.classificationId?.toString() || "";
+                            spending.classification?.id?.toString() || 
+                            spending.classificationId?.toString() || "";
     
     reset({
       classificationId,
       description: spending.description,
-      amount: spending.amount
+      amount: spending.amount,
+      date: spending.date || spending.createdAt?.split('T')[0] || new Date().toISOString().split('T')[0]
     });
     
     setCurrentSpending(spending);
@@ -171,7 +197,8 @@ export function SpendingManagement({ periodId }: SpendingManagementProps) {
           data: {
             description: data.description,
             amount: data.amount,
-            classificationId: data.classificationId
+            classificationId: data.classificationId,
+            date: data.date
           }
         });
         showToast('Spending updated successfully', 'success');
@@ -180,7 +207,8 @@ export function SpendingManagement({ periodId }: SpendingManagementProps) {
           periodId: activePeriodId,
           classificationId: data.classificationId,
           description: data.description,
-          amount: data.amount
+          amount: data.amount,
+          date: data.date
         });
         showToast('Spending created successfully', 'success');
       }
@@ -307,12 +335,9 @@ export function SpendingManagement({ periodId }: SpendingManagementProps) {
   );
 }
 
-function getMonthName(month: number) {
-  return new Date(2000, month - 1, 1).toLocaleString('default', { month: 'long' });
-}
-
 export interface SpendingFormData {
   classificationId: string;
   description: string;
   amount: number;
+  date?: string;
 }

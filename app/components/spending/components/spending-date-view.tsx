@@ -26,7 +26,7 @@ export function SpendingDateView({
       {sortedDates.map(date => (
         <div key={date} className="space-y-3">
           <h3 className="text-xl font-semibold pl-2 border-l-4 border-primary">
-            {formatDate(date)}
+            {date === "no-date" ? "No Date Specified" : formatDate(date)}
           </h3>
           <SpendingList
             spendings={spendingsByDate[date]}

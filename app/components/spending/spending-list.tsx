@@ -57,6 +57,11 @@ export function SpendingList({
                   <span className="text-lg font-semibold">
                     {formatCurrency(spending.amount, currency)}
                   </span>
+                  {spending.date && (
+                    <span className="text-xs text-gray-500 ml-2">
+                      {new Date(spending.date).toLocaleDateString()}
+                    </span>
+                  )}
                 </div>
               </div>
               
