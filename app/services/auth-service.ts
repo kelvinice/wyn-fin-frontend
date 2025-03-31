@@ -5,7 +5,16 @@ import type { EndpointCallResponse } from "~/components/core/_models";
 export default class AuthService extends BaseService {
     login = (data: SignInFormData): Promise<AuthResponse> => {
         return this._axios.post("auth/login", data)
-            .then(response => response.data);
+            .then(response => {
+                // Map the API response to match our AuthResponse type
+                const result = response.data;
+                return {
+                    token: result.accessToken,
+                    refreshToken: result.refreshToken,
+                    user: result.user,
+                    expiresIn: result.expiresIn
+                };
+            });
     }
 
     me = () => {
@@ -17,7 +26,15 @@ export default class AuthService extends BaseService {
     }
     
     refreshToken = (refreshToken: string): Promise<AuthResponse> => {
-        return this._axios.post("auth/refresh-token", { refreshToken })
-            .then(response => response.data);
+        return this._axios.post("auth/refresh", { refreshToken })
+            .then(response => {
+                const result = response.data;
+                return {
+                    token: result.accessToken,
+                    refreshToken: result.refreshToken,
+                    user: result.user,
+                    expiresIn: result.expiresIn
+                };
+            });
     }
 }

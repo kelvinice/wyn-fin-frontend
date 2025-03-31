@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { Navigate, useLocation, useNavigate, useFetcher } from 'react-router';
+import { useLocation, useNavigate, useFetcher } from 'react-router';
 import type { User } from '../core/models';
 
 // Define the structure of our auth context
@@ -7,9 +7,9 @@ type AuthContextType = {
   user: User | null;
   token: string | null;
   isAuthenticated: boolean;
-  signIn: (token: string, user: User, expiresIn: number) => Promise<void>; // Update the signIn type
+  signIn: (token: string, user: User, expiresIn: number) => Promise<void>;
   signOut: () => void;
-  getAuthToken: () => string | null; // Add this new method
+  getAuthToken: () => string | null;
 };
 
 // Create a context with a default value
@@ -17,39 +17,10 @@ const AuthContext = createContext<AuthContextType>({
   user: null,
   token: null,
   isAuthenticated: false,
-  signIn: () => Promise.resolve(), // Update the default signIn
+  signIn: () => Promise.resolve(),
   signOut: () => {},
   getAuthToken: () => null,
 });
-
-// Safe client-side storage access as fallback for SSR
-const storage = {
-  get: (key: string): string | null => {
-    if (typeof window === 'undefined') return null;
-    try {
-      return localStorage.getItem(key);
-    } catch (e) {
-      console.error('Error accessing localStorage:', e);
-      return null;
-    }
-  },
-  set: (key: string, value: string): void => {
-    if (typeof window === 'undefined') return;
-    try {
-      localStorage.setItem(key, value);
-    } catch (e) {
-      console.error('Error writing to localStorage:', e);
-    }
-  },
-  remove: (key: string): void => {
-    if (typeof window === 'undefined') return;
-    try {
-      localStorage.removeItem(key);
-    } catch (e) {
-      console.error('Error removing from localStorage:', e);
-    }
-  }
-};
 
 // Define the auth provider component
 export const AuthProvider = ({ 
@@ -75,40 +46,34 @@ export const AuthProvider = ({
       return;
     }
     
-    const savedToken = storage.get('auth_token');
-    const savedUser = storage.get('auth_user');
-    
-    if (savedToken && savedUser) {
+    // Check for auth cookies on component mount
+    const checkAuthCookies = async () => {
       try {
-        setToken(savedToken);
-        setUser(JSON.parse(savedUser));
+        const response = await fetch('/api/auth/get-session');
+        
+        if (response.ok) {
+          const data = await response.json();
+          if (data.token && data.userData) {
+            setToken(data.token);
+            setUser(data.userData);
+          }
+        }
       } catch (error) {
-        console.error('Failed to parse stored user data:', error);
-        // Clear invalid data
-        storage.remove('auth_token');
-        storage.remove('auth_user');
+        console.error('Failed to retrieve auth data from cookies:', error);
+      } finally {
+        setLoading(false);
       }
-    }
+    };
     
-    setLoading(false);
-  }, [initialAuthState.isAuthenticated]);
+    checkAuthCookies();
+  }, [initialAuthState.isAuthenticated, fetcher]);
 
   // Sign in function
   const signIn = (authToken: string, userData: User, expiresIn: number): Promise<void> => {
     setToken(authToken);
     setUser(userData);
     
-    // Store in localStorage as fallback
-    storage.set('auth_token', authToken);
-    storage.set('auth_user', JSON.stringify(userData));
-    
-    // Set token expiration locally
-    if (expiresIn) {
-      const expirationTime = new Date().getTime() + expiresIn * 1000;
-      storage.set('auth_expires', expirationTime.toString());
-    }
-    
-    // Store auth data in cookies via server action and return the promise
+    // Store auth data in cookies via server action
     const formData = new FormData();
     formData.append('token', authToken);
     formData.append('userData', JSON.stringify(userData));
@@ -142,30 +107,27 @@ export const AuthProvider = ({
     setToken(null);
     setUser(null);
     
-    storage.remove('auth_token');
-    storage.remove('auth_user');
-    storage.remove('auth_expires');
-    
     fetcher.submit(null, {
       method: 'post',
       action: '/api/auth/clear-session'
     });
   };
   
-  // Check for token expiration
+  // Check for token expiration using server endpoint
   useEffect(() => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === 'undefined' || !token) return;
     
-    const checkTokenExpiration = () => {
-      const expiration = storage.get('auth_expires');
-      if (expiration && token) {
-        const expirationTime = parseInt(expiration, 10);
-        const currentTime = new Date().getTime();
+    const checkTokenExpiration = async () => {
+      try {
+        const response = await fetch('/api/auth/check-token-validity');
+        const data = await response.json();
         
-        if (currentTime > expirationTime) {
+        if (!data.isValid) {
           console.log('Token expired, logging out');
           signOut();
         }
+      } catch (error) {
+        console.error('Error checking token validity:', error);
       }
     };
     
@@ -284,14 +246,14 @@ export const authLoader = (redirectTo = "/auth/login") => {
     // For server-side rendering, we'll use cookies
     const cookieHeader = request.headers.get("Cookie");
     
-    // Client-side fallback
-    if (typeof window !== 'undefined') {
-      const hasToken = !!storage.get('auth_token');
-      const hasUser = !!storage.get('auth_user');
-      
-      if (!hasToken || !hasUser) {
-        return { redirect: redirectTo };
-      }
+    // We'll rely on cookies for both server and client authentication
+    const response = await fetch('/api/auth/check-auth', {
+      headers: { Cookie: cookieHeader || '' }
+    });
+    
+    const data = await response.json();
+    if (!data.isAuthenticated) {
+      return { redirect: redirectTo };
     }
     
     return null;
